@@ -1,36 +1,300 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🩺 Smart HealthHub
 
-## Getting Started
+Smart HealthHub is a modern wellness management platform designed to support students' mental, emotional, and physical wellbeing through personalized tracking, professional support, and role-based healthcare management.
 
-First, run the development server:
+The platform provides dedicated dashboards for Students, Counselors, Doctors, Administrators, and Super Administrators, enabling seamless communication, wellness monitoring, appointment management, and healthcare analytics.
+
+---
+
+## ✨ Features
+
+### 👨‍🎓 Student Portal
+
+* Personalized wellness dashboard
+* Mood tracking
+* Sleep monitoring
+* Habit management
+* Self-assessments
+* Appointment booking
+* Community forum
+* Wellness reports
+
+### 👩‍⚕️ Counselor Portal
+
+* Student wellbeing monitoring
+* Counseling session management
+* Appointment scheduling
+* Assessment review
+* Progress tracking
+* Counseling notes
+
+### 🩺 Doctor Portal
+
+* Patient overview
+* Medical consultation management
+* Appointment scheduling
+* Health analytics
+* Wellness reports
+* Clinical records
+
+### 👨‍💼 Admin Portal
+
+* User management
+* Platform monitoring
+* Analytics dashboard
+* Content moderation
+* Appointment oversight
+
+### 🔐 Super Admin Portal
+
+* Role management
+* System monitoring
+* Security controls
+* Audit logs
+* Platform configuration
+* Administrative analytics
+
+---
+
+## 🚀 Tech Stack
+
+### Frontend
+
+* Next.js 16
+* React 19
+* TypeScript
+* Tailwind CSS
+
+### Backend & Authentication
+
+* Supabase
+* Supabase Authentication
+* PostgreSQL
+
+### UI & Styling
+
+* Tailwind CSS
+* Lucide React Icons
+* Framer Motion
+* Sonner Toast
+
+### Deployment
+
+* Vercel
+
+---
+
+### Architecture Overview
+
+Smart HealthHub follows a role-based architecture where each user type has an isolated dashboard and feature set:
+
+- Student Portal
+- Counselor Portal
+- Doctor Portal
+- Admin Portal
+- Super Admin Portal
+
+Authentication, authorization, and role management are powered by Supabase Authentication and PostgreSQL.
+
+
+## 📂 Project Structure
+
+app/
+├── (auth)/
+│   ├── login/
+│   ├── register/
+│   ├── forgot-password/
+│   └── auth/
+│
+├── (public)/
+│   ├── about/
+│   ├── contact/
+│   ├── features/
+│   ├── resources/
+│   └── page.tsx
+│
+├── student/
+│   ├── dashboard/
+│   ├── mood/
+│   ├── sleep/
+│   ├── habits/
+│   ├── assessments/
+│   ├── appointments/
+│   ├── forum/
+│   └── reports/
+│
+├── counselor/
+│   ├── dashboard/
+│   ├── students/
+│   ├── appointments/
+│   ├── assessments/
+│   └── reports/
+│
+├── doctor/
+│   ├── dashboard/
+│   ├── patients/
+│   ├── appointments/
+│   ├── records/
+│   └── reports/
+│
+├── admin/
+│   ├── dashboard/
+│   ├── users/
+│   ├── appointments/
+│   ├── reports/
+│   └── settings/
+│
+├── super-admin/
+│   ├── dashboard/
+│   ├── users/
+│   ├── admins/
+│   ├── roles/
+│   ├── analytics/
+│   ├── system/
+│   ├── security/
+│   ├── audit-logs/
+│   └── settings/
+│
+├── api/
+├── layout.tsx
+└── page.tsx
+
+components/
+├── admin/
+├── counselor/
+├── doctor/
+├── student/
+├── super-admin/
+├── ui/
+├── animations/
+└── shared/
+
+lib/
+├── auth/
+├── supabase/
+├── redirects.ts
+├── get-user-role.ts
+└── utils.ts
+
+public/
+├── images/
+├── icons/
+└── favicon.ico
+
+middleware.ts
+next.config.ts
+tailwind.config.ts
+---
+
+## 🔑 Authentication & Authorization
+
+Smart HealthHub uses Supabase Authentication with role-based access control.
+
+Supported roles:
+
+* student
+* counselor
+* doctor
+* admin
+* super_admin
+
+Users are automatically redirected to their respective dashboard after login.
+
+| Role        | Dashboard              |
+| ----------- | ---------------------- |
+| Student     | /student/dashboard     |
+| Counselor   | /counselor/dashboard   |
+| Doctor      | /doctor/dashboard      |
+| Admin       | /admin/dashboard       |
+| Super Admin | /super-admin/dashboard |
+
+---
+
+## ⚙️ Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+---
+
+## 🏃 Running Locally
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```txt
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🗄️ Database
 
-To learn more about Next.js, take a look at the following resources:
+The platform uses Supabase PostgreSQL with:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+* Authentication
+* Profiles Table
+* Role Management
+* Row Level Security (RLS)
+* Role-Based Route Protection
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🌐 Main Pages
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+* Home
+* About
+* Features
+* Resources
+* Contact
+* Login
+* Register
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 📈 Future Enhancements
+
+* AI Wellness Assistant
+* Real-Time Chat
+* Video Consultation
+* Health Prediction Analytics
+* Mobile Application
+* Wellness Recommendations
+* Emergency Support System
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome.
+
+Feel free to fork the project and submit a pull request.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍💻 Developer
+
+Developed with ❤️ using Next.js, TypeScript, Tailwind CSS, and Supabase.
+
+Smart HealthHub © 2026
