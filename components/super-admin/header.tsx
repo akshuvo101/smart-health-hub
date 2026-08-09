@@ -15,9 +15,10 @@ import {
 
 import ThemeToggle from "@/components/theme-toggle";
 import SuperAdminMobileSidebar from "./mobile-sidebar";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 export default function SuperAdminHeader() {
+  const supabase = createClient();
   const router = useRouter();
 
   const [userName, setUserName] =

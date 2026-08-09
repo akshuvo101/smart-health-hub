@@ -15,7 +15,9 @@ import {
 
 import ThemeToggle from "@/components/theme-toggle";
 import DoctorMobileSidebar from "./mobile-sidebar";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 export default function DoctorHeader() {
   const router = useRouter();

@@ -7,7 +7,6 @@ export default async function StudentLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // await requireRole(["student"]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">

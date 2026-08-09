@@ -8,7 +8,7 @@ import { Eye, EyeOff, HeartPulse, Lock, Mail, User } from "lucide-react";
 
 import { toast } from "sonner";
 
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { getDashboardRoute } from "@/lib/redirects";
 
 import SocialLogin from "./social-login";
@@ -20,6 +20,7 @@ interface AuthCardProps {
 }
 
 export default function AuthCard({ type }: AuthCardProps) {
+  const supabase = createClient();
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);

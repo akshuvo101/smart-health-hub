@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { getUserRole } from "@/lib/get-user-role";
 import { getDashboardRoute } from "@/lib/redirects";
 
@@ -15,58 +15,60 @@ export default function AuthCallbackPage() {
   );
 
   useEffect(() => {
-    let subscription:
-      | { unsubscribe: () => void }
-      | undefined;
+  const supabase = createClient();
 
-    async function redirectUser() {
-      const role = await getUserRole();
+  let subscription:
+    | { unsubscribe: () => void }
+    | undefined;
 
-      router.replace(
-        getDashboardRoute(role || "student")
-      );
-    }
+  async function redirectUser() {
+    const role = await getUserRole();
 
-    async function handleAuth() {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
+    router.replace(
+      getDashboardRoute(role || "student")
+    );
+  }
 
-      if (error) {
-        setStatus(
-          "Unable to read session after redirect."
-        );
-        return;
-      }
+  async function handleAuth() {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
 
-      if (session) {
-        await redirectUser();
-        return;
-      }
-
+    if (error) {
       setStatus(
-        "Waiting for authentication to complete..."
+        "Unable to read session after redirect."
       );
-
-      const { data } =
-        supabase.auth.onAuthStateChange(
-          async (_event, session) => {
-            if (session) {
-              await redirectUser();
-            }
-          }
-        );
-
-      subscription = data.subscription;
+      return;
     }
 
-    handleAuth();
+    if (session) {
+      await redirectUser();
+      return;
+    }
 
-    return () => {
-      subscription?.unsubscribe();
-    };
-  }, [router]);
+    setStatus(
+      "Waiting for authentication to complete..."
+    );
+
+    const { data } =
+      supabase.auth.onAuthStateChange(
+        async (_event, session) => {
+          if (session) {
+            await redirectUser();
+          }
+        }
+      );
+
+    subscription = data.subscription;
+  }
+
+  handleAuth();
+
+  return () => {
+    subscription?.unsubscribe();
+  };
+}, [router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 dark:bg-slate-950">

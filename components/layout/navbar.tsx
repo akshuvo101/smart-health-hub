@@ -10,7 +10,7 @@ import { getDashboardRoute } from "@/lib/redirects";
 
 import Container from "./container";
 import ThemeToggle from "../theme-toggle";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 const navLinks = [
   {
@@ -36,6 +36,7 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const supabase = createClient();
   const router = useRouter();
   const [dashboardRoute, setDashboardRoute] = useState("/student/dashboard");
 
@@ -67,26 +68,6 @@ export default function Navbar() {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-
-      // if (!session) return;
-
-      // setUser(session.user);
-
-      // setUserName(
-      //   session.user.user_metadata
-      //     ?.full_name ||
-      //     session.user.user_metadata
-      //       ?.name ||
-      //     "User"
-      // );
-
-      // setUserAvatar(
-      //   session.user.user_metadata
-      //     ?.avatar_url ||
-      //     session.user.user_metadata
-      //       ?.picture ||
-      //     null
-      // );
       if (!session) return;
 
       setUser(session.user);
@@ -190,7 +171,7 @@ export default function Navbar() {
 
             <div>
               <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                Smart HealthHub
+                PsycoMentalHub
               </h1>
 
               <p className="text-xs text-slate-500 dark:text-slate-400">

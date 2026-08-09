@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@plugin "@tailwindcss/typography";
 /* Tailwind v4 Dark Mode */
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -84,4 +84,23 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(16, 185, 129, 0.6);
+}
+
+
+
+
+
+
+html,
+body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+}
+
+#__next {
+  height: 100%;
 }

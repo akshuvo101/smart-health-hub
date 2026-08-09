@@ -2,9 +2,10 @@
 
 import { FcGoogle } from "react-icons/fc";
 
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 export default function SocialLogin() {
+  const supabase = createClient();
   const handleGoogleLogin = async () => {
     const { error } =
       await supabase.auth.signInWithOAuth({

@@ -38,7 +38,7 @@ export default function Footer() {
 
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  Smart HealthHub
+                  PsycoMentalHub
                 </h3>
 
                 <p className="text-xs text-slate-500">

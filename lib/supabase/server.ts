@@ -1,5 +1,10 @@
 import { cookies } from "next/headers";
+
 import { createServerClient } from "@supabase/ssr";
+
+/* ==========================================================
+   Server Supabase Client
+========================================================== */
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -9,8 +14,30 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
+        },
+
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(
+              ({ name, value, options }) => {
+                cookieStore.set(
+                  name,
+                  value,
+                  options
+                );
+              }
+            );
+          } catch {
+            /**
+             * Ignore when called from
+             * Server Components.
+             *
+             * Middleware will refresh
+             * the session instead.
+             */
+          }
         },
       },
     }

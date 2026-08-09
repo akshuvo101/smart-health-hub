@@ -12,11 +12,12 @@ import {
   LogOut,
 } from "lucide-react";
 
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 import ThemeToggle from "@/components/theme-toggle";
 import MobileSidebar from "./mobile-sidebar";
 
+const supabase = createClient();
 export default function AdminHeader() {
   const router = useRouter();
 

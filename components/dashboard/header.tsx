@@ -14,9 +14,10 @@ import {
 
 import ThemeToggle from "@/components/theme-toggle";
 import MobileSidebar from "./mobile-sidebar";
-import { supabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Header() {
+  const supabase = createClient();  
   const router = useRouter();
 
   const [userName, setUserName] =
