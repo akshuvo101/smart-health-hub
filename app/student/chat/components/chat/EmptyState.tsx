@@ -5,11 +5,46 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import { useChatContext } from "../../context/ChatContext";
+
+const SUGGESTIONS = [
+  "😊 I'm feeling stressed today",
+  "😴 Help me improve my sleep",
+  "📚 I can't focus on studying",
+  "🌱 Give me today's wellness advice",
+];
+
 /* ==========================================================
    Component
 ========================================================== */
 
 export default function EmptyState() {
+  const {
+    activeConversationId,
+    createConversation,
+    sendMessage,
+  } = useChatContext();
+
+  const handleSuggestionClick = async (
+    suggestion: string
+  ) => {
+    try {
+      const conversationId =
+        activeConversationId ??
+        (await createConversation());
+
+      await sendMessage(
+        suggestion,
+        conversationId
+      );
+    } catch (error) {
+      console.error(
+        "Failed to send suggestion:",
+        error
+      );
+    }
+  };
+
   return (
     <div
       className="
@@ -111,7 +146,7 @@ export default function EmptyState() {
         >
           <Sparkles className="h-4 w-4" />
 
-          WellMind AI Assistant
+          WellMind AI Premium
         </div>
 
         {/* ======================================
@@ -154,7 +189,7 @@ export default function EmptyState() {
           I'm here to support your mental wellbeing,
           help you reflect on your emotions, understand
           your habits, and guide you toward healthier
-          daily routines.
+          daily routines with premium professional support.
         </p>
 
         {/* ======================================
@@ -173,17 +208,14 @@ export default function EmptyState() {
             sm:grid-cols-2
           "
         >
-          {[
-            "😊 I'm feeling stressed today",
-            "😴 Help me improve my sleep",
-            "📚 I can't focus on studying",
-            "🌱 Give me today's wellness advice",
-          ].map((item) => (
-            <div
+          {SUGGESTIONS.map((item) => (
+            <button
               key={item}
+              type="button"
+              onClick={() =>
+                handleSuggestionClick(item)
+              }
               className="
-                cursor-pointer
-
                 rounded-2xl
 
                 border
@@ -213,7 +245,7 @@ export default function EmptyState() {
               "
             >
               {item}
-            </div>
+            </button>
           ))}
         </div>
 

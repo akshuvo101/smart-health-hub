@@ -1,10 +1,12 @@
+
 /* ==========================================================
    Message Role
 ========================================================== */
 
 export type MessageRole =
   | "user"
-  | "assistant";
+  | "assistant"
+  | "system";
 
 /* ==========================================================
    Message Status
@@ -24,6 +26,8 @@ export type MessageStatus =
 export interface ChatMessage {
   id: string;
 
+  conversationId: string;
+
   role: MessageRole;
 
   content: string;
@@ -40,3 +44,4 @@ export interface ChatMessage {
    */
   status?: MessageStatus;
 }
+

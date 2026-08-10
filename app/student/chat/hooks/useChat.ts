@@ -1,185 +1,471 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { ChatMessage } from "../types/message";
-import { mockMessages } from "../data/mock-messages";
 
 const TYPING_SPEED = 18;
 
-export function useChat() {
-  const [messages, setMessages] =
-    useState<ChatMessage[]>(mockMessages);
+interface DatabaseMessage {
+  id: string;
+  conversation_id: string;
+  role: "user" | "assistant";
+  content: string;
+  token_count?: number | null;
+  created_at: string;
+}
+
+interface UseChatOptions {
+  conversationId: string | null;
+}
+
+export function useChat({
+  conversationId,
+}: UseChatOptions) {
+  const [messages, setMessages] = useState<
+    ChatMessage[]
+  >([]);
 
   const [isLoading, setIsLoading] =
     useState(false);
 
-  /**
-   * Character by character animation
-   */
+  const [isLoadingMessages, setIsLoadingMessages] =
+    useState(false);
 
-  const animateAssistantMessage = async (
-    id: string,
-    text: string
-  ) => {
-    for (let i = 0; i <= text.length; i++) {
-      await new Promise((resolve) =>
-        setTimeout(resolve, TYPING_SPEED)
-      );
+  const abortControllerRef =
+    useRef<AbortController | null>(null);
 
-      setMessages((prev) =>
-        prev.map((message) =>
-          message.id === id
-            ? {
-                ...message,
-                content: text.slice(0, i),
-                isTyping: i !== text.length,
-                status:
-                  i === text.length
-                    ? "completed"
-                    : "typing",
-              }
-            : message
-        )
-      );
-    }
-  };
+  // ==========================================================
+  // Convert Database Message -> UI Message
+  // ==========================================================
 
-  /**
-   * Send message
-   */
+  const mapDatabaseMessage = useCallback(
+    (message: DatabaseMessage): ChatMessage => {
+      return {
+        id: message.id,
 
-  const sendMessage = async (
-    text: string
-  ) => {
-    const value = text.trim();
+        conversationId:
+          message.conversation_id,
 
-    if (!value || isLoading) return;
+        role: message.role,
 
-    const userMessage: ChatMessage = {
-      id: crypto.randomUUID(),
+        content: message.content,
 
-      role: "user",
+        createdAt: message.created_at,
 
-      content: value,
+        status: "completed",
 
-      createdAt: new Date().toISOString(),
+        isTyping: false,
+      };
+    },
+    []
+  );
 
-      status: "sent",
-    };
+  // ==========================================================
+  // Load Conversation Messages
+  // ==========================================================
 
-    const updatedMessages = [
-      ...messages,
-      userMessage,
-    ];
+  const loadMessages = useCallback(
+    async (id: string) => {
+      try {
+        setIsLoadingMessages(true);
 
-    setMessages(updatedMessages);
+        // Cancel previous request
+        abortControllerRef.current?.abort();
 
-    setIsLoading(true);
+        const controller =
+          new AbortController();
 
-    try {
-      const response = await fetch(
-        "/api/chat",
-        {
-          method: "POST",
+        abortControllerRef.current =
+          controller;
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+        const response = await fetch(
+          `/api/chat/conversations/${id}/messages`,
+          {
+            method: "GET",
+            cache: "no-store",
+            signal: controller.signal,
+          }
+        );
 
-          body: JSON.stringify({
-            messages: updatedMessages.map(
-              (message) => ({
-                role: message.role,
-                content: message.content,
-              })
-            ),
-          }),
+        const result =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !result.success
+        ) {
+          throw new Error(
+            result.message ||
+              "Failed to load messages."
+          );
         }
-      );
 
-      if (!response.ok) {
-        throw new Error(
-          "Failed to generate AI response."
+        const databaseMessages: DatabaseMessage[] =
+          result.data ?? [];
+
+        const mappedMessages =
+          databaseMessages.map(
+            mapDatabaseMessage
+          );
+
+        setMessages(mappedMessages);
+      } catch (error) {
+        // Ignore aborted requests
+        if (
+          error instanceof DOMException &&
+          error.name === "AbortError"
+        ) {
+          return;
+        }
+
+        console.error(
+          "Failed to load conversation messages:",
+          error
+        );
+
+        setMessages([]);
+      } finally {
+        setIsLoadingMessages(false);
+      }
+    },
+    [mapDatabaseMessage]
+  );
+
+  // ==========================================================
+  // Load messages whenever conversation changes
+  // ==========================================================
+
+  useEffect(() => {
+    if (!conversationId) {
+      setMessages([]);
+      setIsLoadingMessages(false);
+
+      return;
+    }
+
+    loadMessages(conversationId);
+
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, [
+    conversationId,
+    loadMessages,
+  ]);
+
+  // ==========================================================
+  // Animate Assistant Message
+  // ==========================================================
+
+  const animateAssistantMessage = useCallback(
+    async (
+      id: string,
+      text: string
+    ) => {
+      for (
+        let i = 0;
+        i <= text.length;
+        i++
+      ) {
+        await new Promise((resolve) =>
+          setTimeout(
+            resolve,
+            TYPING_SPEED
+          )
+        );
+
+        setMessages((prev) =>
+          prev.map((message) =>
+            message.id === id
+              ? {
+                  ...message,
+
+                  content:
+                    text.slice(0, i),
+
+                  isTyping:
+                    i !== text.length,
+
+                  status:
+                    i === text.length
+                      ? "completed"
+                      : "typing",
+                }
+              : message
+          )
         );
       }
+    },
+    []
+  );
 
-      const data =
-        await response.json();
+  // ==========================================================
+  // Send Message
+  // ==========================================================
 
-      /**
-       * Empty assistant message
-       */
+  const sendMessage = useCallback(
+    async (text: string) => {
+      const value = text.trim();
 
-      const assistantId =
-        crypto.randomUUID();
+      if (
+        !value ||
+        isLoading ||
+        !conversationId
+      ) {
+        return;
+      }
 
-      setMessages((prev) => [
-        ...prev,
+      // ------------------------------------------------------
+      // Temporary user message
+      // ------------------------------------------------------
+
+      const temporaryUserMessage: ChatMessage =
         {
-          id: assistantId,
+          id: `temp-${crypto.randomUUID()}`,
 
-          role: "assistant",
+          conversationId,
 
-          content: "",
+          role: "user",
+
+          content: value,
 
           createdAt:
             new Date().toISOString(),
 
-          isTyping: true,
+          status: "sent",
 
-          status: "typing",
-        },
+          isTyping: false,
+        };
+
+      // Show immediately
+      setMessages((prev) => [
+        ...prev,
+        temporaryUserMessage,
       ]);
 
-      /**
-       * Animate response
-       */
+      setIsLoading(true);
 
-      await animateAssistantMessage(
-        assistantId,
-        data.message
+      try {
+        // ----------------------------------------------------
+        // Send to Conversation API
+        // ----------------------------------------------------
+
+        const response = await fetch(
+          `/api/chat/conversations/${conversationId}/messages`,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              content: value,
+            }),
+          }
+        );
+
+        const result =
+          await response.json();
+
+        if (
+          !response.ok ||
+          !result.success
+        ) {
+          throw new Error(
+            result.message ||
+              "Failed to send message."
+          );
+        }
+
+        // ----------------------------------------------------
+        // Backend response
+        //
+        // {
+        //   userMessage,
+        //   assistantMessage
+        // }
+        // ----------------------------------------------------
+
+        const userMessage: DatabaseMessage =
+          result.data?.userMessage;
+
+        const assistantMessage: DatabaseMessage =
+          result.data?.assistantMessage;
+
+        if (!userMessage) {
+          throw new Error(
+            "User message was not returned."
+          );
+        }
+
+        if (!assistantMessage) {
+          throw new Error(
+            "Assistant message was not returned."
+          );
+        }
+
+        // ----------------------------------------------------
+        // Convert database messages
+        // ----------------------------------------------------
+
+        const mappedUserMessage =
+          mapDatabaseMessage(
+            userMessage
+          );
+
+        const mappedAssistantMessage =
+          mapDatabaseMessage(
+            assistantMessage
+          );
+
+        // ----------------------------------------------------
+        // Replace temporary user message
+        // with real DB user message
+        // and add assistant message
+        // ----------------------------------------------------
+
+        setMessages((prev) => {
+          const withoutTemporary =
+            prev.filter(
+              (message) =>
+                message.id !==
+                temporaryUserMessage.id
+            );
+
+          return [
+            ...withoutTemporary,
+
+            mappedUserMessage,
+
+            {
+              ...mappedAssistantMessage,
+
+              content: "",
+
+              isTyping: true,
+
+              status: "typing",
+            },
+          ];
+        });
+
+        // ----------------------------------------------------
+        // Animate assistant response
+        // ----------------------------------------------------
+
+        await animateAssistantMessage(
+          mappedAssistantMessage.id,
+          mappedAssistantMessage.content
+        );
+      } catch (error) {
+        console.error(
+          "Failed to send chat message:",
+          error
+        );
+
+        // ----------------------------------------------------
+        // Remove temporary message and
+        // show error assistant message
+        // ----------------------------------------------------
+
+        setMessages((prev) => [
+          ...prev.filter(
+            (message) =>
+              message.id !==
+              temporaryUserMessage.id
+          ),
+
+          {
+            id: `error-${crypto.randomUUID()}`,
+
+            conversationId,
+
+            role: "assistant",
+
+            content:
+              "Sorry, something went wrong. Please try again.",
+
+            createdAt:
+              new Date().toISOString(),
+
+            status: "error",
+
+            isTyping: false,
+          },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      conversationId,
+      isLoading,
+      mapDatabaseMessage,
+      animateAssistantMessage,
+    ]
+  );
+
+  // ==========================================================
+  // Clear Conversation
+  // ==========================================================
+
+  const clearConversation =
+    useCallback(() => {
+      setMessages([]);
+    }, []);
+
+  // ==========================================================
+  // Reload Messages
+  // ==========================================================
+
+  const reloadMessages =
+    useCallback(async () => {
+      if (!conversationId) {
+        setMessages([]);
+        return;
+      }
+
+      await loadMessages(
+        conversationId
       );
-    } catch (error) {
-      console.error(error);
+    }, [
+      conversationId,
+      loadMessages,
+    ]);
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
+  // ==========================================================
+  // Cleanup
+  // ==========================================================
 
-          role: "assistant",
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
-          content:
-            "Sorry, something went wrong. Please try again.",
-
-          createdAt:
-            new Date().toISOString(),
-
-          status: "error",
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  /**
-   * Clear conversation
-   */
-
-  const clearConversation = () => {
-    setMessages([]);
-  };
+  // ==========================================================
+  // Return
+  // ==========================================================
 
   return {
     messages,
 
     isLoading,
 
+    isLoadingMessages,
+
     sendMessage,
 
     clearConversation,
+
+    reloadMessages,
   };
 }

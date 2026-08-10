@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -9,10 +10,18 @@ import TypingIndicator from "./TypingIndicator";
 import { ChatMessage } from "../../types/message";
 import { formatTime } from "../utils/format-time";
 
+/* ==========================================================
+   Props
+========================================================== */
+
 interface MessageListProps {
   messages: ChatMessage[];
   isLoading: boolean;
 }
+
+/* ==========================================================
+   Component
+========================================================== */
 
 export default function MessageList({
   messages,
@@ -24,9 +33,10 @@ export default function MessageList({
   const bottomRef =
     useRef<HTMLDivElement>(null);
 
-  /**
-   * Auto Scroll
-   */
+  /* ========================================================
+     Auto Scroll
+  ======================================================== */
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
       behavior: "smooth",
@@ -34,42 +44,83 @@ export default function MessageList({
     });
   }, [messages, isLoading]);
 
-  /**
-   * Empty
-   */
+  /* ========================================================
+     Empty State
+  ======================================================== */
+
   if (
     messages.length === 0 &&
     !isLoading
   ) {
-    return <EmptyState />;
+    return (
+      <div
+        className="
+          flex
+          h-full
+          items-center
+          justify-center
+
+          px-4
+          py-8
+        "
+      >
+        <EmptyState />
+      </div>
+    );
   }
+
+  /* ========================================================
+     Render
+  ======================================================== */
 
   return (
     <div
       ref={containerRef}
       className="
         h-full
+        min-h-0
         overflow-y-auto
+        overscroll-contain
+
         scroll-smooth
 
-        px-4
-        py-8
+        px-3
+        py-6
+
+        sm:px-4
+        sm:py-8
 
         md:px-6
+
         lg:px-8
+
+        [scrollbar-width:thin]
+        [scrollbar-color:rgb(203_213_225)_transparent]
+
+        dark:[scrollbar-color:rgb(51_65_85)_transparent]
       "
     >
       <div
         className="
           mx-auto
+
           flex
           w-full
           max-w-4xl
           flex-col
-          gap-6
-          pb-8
+
+          gap-5
+
+          sm:gap-6
+
+          pb-4
+          sm:pb-6
         "
       >
+        {/* ==================================================
+            Messages
+        ================================================== */}
+
         {messages.map((message) => (
           <MessageBubble
             key={message.id}
@@ -81,15 +132,25 @@ export default function MessageList({
           />
         ))}
 
+        {/* ==================================================
+            Typing Indicator
+        ================================================== */}
+
         {isLoading && (
           <TypingIndicator />
         )}
 
+        {/* ==================================================
+            Scroll Anchor
+        ================================================== */}
+
         <div
           ref={bottomRef}
-          className="h-2"
+          className="h-px w-full"
+          aria-hidden="true"
         />
       </div>
     </div>
   );
 }
+

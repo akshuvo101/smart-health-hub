@@ -2,7 +2,7 @@
 
 interface SidebarOverlayProps {
   open: boolean;
-  onClose: () =>void;
+  onClose: () => void;
 }
 
 export default function SidebarOverlay({
@@ -19,9 +19,10 @@ export default function SidebarOverlay({
       className="
         fixed
         inset-0
+
         z-[60]
 
-        bg-black/40
+        bg-slate-950/50
         backdrop-blur-sm
 
         lg:hidden

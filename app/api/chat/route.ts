@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { createClient } from "@/lib/supabase/server";
 import { AssessmentRepository } from "@/repositories/assessment.repository";
 import { AIChatService } from "@/services/ai-chat.service";
 export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json();
+    const body = await req.json();
+
+    const conversationId =
+      body.conversationId ||
+      body.conversation_id;
+
+    const content =
+      body.content ||
+      body.messages ||
+      "";
 
     console.log("========== CHAT REQUEST ==========");
-    console.dir(messages, { depth: null });
+    console.dir(body, { depth: null });
 
     const user =
       await AssessmentRepository.getCurrentUser();
@@ -36,6 +46,31 @@ export async function POST(req: NextRequest) {
       !!assessment
     );
 
+    if (!conversationId) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Conversation ID is required.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (!content || typeof content !== "string") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Message content is required.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     if (!assessment) {
       return NextResponse.json(
         {
@@ -49,11 +84,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const supabase = await createClient();
+    const chatService = new AIChatService(
+      supabase
+    );
+
     const reply =
-      await AIChatService.sendMessage(
-        assessment,
-        messages
-      );
+      await chatService.sendMessage({
+        conversationId,
+        content,
+      });
 
     console.log("AI Reply:", reply);
 

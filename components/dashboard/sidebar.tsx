@@ -5,153 +5,331 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 import {
-  LayoutDashboard,
-  BrainCircuit,
-  ClipboardCheck,
-  Calendar,
-  BarChart3,
-  Settings,
+  ChevronLeft,
+  ChevronRight,
   Heart,
+  HeartPulse,
 } from "lucide-react";
 
-const menuItems = [
-  {
-    title: "Dashboard",
-    href: "/student/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Profile",
-    href: "/student/profile",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "AI Counselor",
-    href: "/student/chat",
-    icon: BrainCircuit,
-  },
-  {
-    title: "Assessments",
-    href: "/student/assessment/questions",
-    icon: ClipboardCheck,
-  },
-  {
-    title: "Appointments",
-    href: "/student/appointments",
-    icon: Calendar,
-  },
-  {
-    title: "Reports",
-    href: "/student/reports",
-    icon: BarChart3,
-  },
-  {
-    title: "Settings",
-    href: "/student/settings",
-    icon: Settings,
-  },
-];
+import { menuItems } from "@/config/student-menu";
+import { useStudentSidebar } from "./student-sidebar-context";
 
 export default function Sidebar() {
   const pathname = usePathname();
 
+  const {
+    collapsed,
+    toggleSidebar,
+  } = useStudentSidebar();
+
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 lg:flex lg:flex-col">
-      {/* Logo */}
-      <div className="border-b border-slate-200 p-6 dark:border-slate-800">
+    <aside
+      className={clsx(
+        `
+          fixed
+          left-4
+          top-4
+          bottom-4
+          z-50
+          hidden
+          flex-col
+          rounded-[28px]
+          border
+          border-slate-200/70
+          bg-white/90
+          shadow-[0_20px_60px_rgba(15,23,42,0.08)]
+          backdrop-blur-2xl
+          transition-all
+          duration-300
+          ease-in-out
+          lg:flex
+          dark:border-slate-800/80
+          dark:bg-slate-950/90
+          dark:shadow-black/30
+        `,
+        collapsed
+          ? "w-[76px]"
+          : "w-[256px]"
+      )}
+    >
+      {/* =====================================
+          HEADER
+      ====================================== */}
+
+      <div
+        className={clsx(
+          "flex items-center border-b border-slate-200/70 dark:border-slate-800/70",
+          collapsed
+            ? "justify-center px-3 py-5"
+            : "justify-between px-4 py-4"
+        )}
+      >
         <Link
           href="/student/dashboard"
-          className="flex items-center gap-3"
+          className={clsx(
+            "flex items-center",
+            collapsed
+              ? "justify-center"
+              : "gap-3"
+          )}
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 shadow-lg shadow-emerald-500/30">
-            <Heart className="h-6 w-6 text-white" />
+          {/* Logo */}
+
+          <div
+            className="
+              flex
+              h-10
+              w-10
+              shrink-0
+              items-center
+              justify-center
+              rounded-xl
+              bg-gradient-to-br
+              from-emerald-500
+              via-teal-500
+              to-cyan-500
+              shadow-lg
+              shadow-emerald-500/20
+            "
+          >
+            <HeartPulse className="h-5 w-5 text-white" />
           </div>
 
-          <div>
-            <h2 className="font-bold text-slate-900 dark:text-white">
-              PsycoMentalHub
-            </h2>
+          {/* Brand */}
 
-            <p className="text-xs text-slate-500">
-              Student Portal
-            </p>
-          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <h2 className="truncate text-sm font-bold text-slate-900 dark:text-white">
+                PsycoMentalHub
+              </h2>
+
+              <p className="text-[10px] text-slate-400">
+                Student Portal
+              </p>
+            </div>
+          )}
         </Link>
+
+        {/* Collapse Button */}
+
+        {!collapsed && (
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            aria-label="Collapse sidebar"
+            className="
+              flex
+              h-8
+              w-8
+              items-center
+              justify-center
+              rounded-lg
+              border
+              border-slate-200
+              text-slate-400
+              transition
+              hover:bg-slate-100
+              hover:text-slate-900
+              dark:border-slate-800
+              dark:hover:bg-slate-900
+              dark:hover:text-white
+            "
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
-      {/* Navigation */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <nav className="space-y-2">
+      {/* =====================================
+          COLLAPSED EXPAND BUTTON
+      ====================================== */}
+
+      {collapsed && (
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          aria-label="Expand sidebar"
+          className="
+            absolute
+            -right-3
+            top-12
+            flex
+            h-8
+            w-8
+            items-center
+            justify-center
+            rounded-full
+            border
+            border-slate-200
+            bg-white
+            text-slate-500
+            shadow-md
+            transition
+            hover:scale-105
+            hover:text-slate-900
+            dark:border-slate-700
+            dark:bg-slate-900
+            dark:text-slate-300
+          "
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      )}
+
+      {/* =====================================
+          NAVIGATION
+      ====================================== */}
+
+      <div className="flex-1 overflow-y-auto p-3">
+        {!collapsed && (
+          <p className="mb-3 px-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+            Navigation
+          </p>
+        )}
+
+        <nav className="space-y-1.5">
           {menuItems.map((item) => {
             const Icon = item.icon;
 
             const active =
               pathname === item.href ||
-              pathname.startsWith(`${item.href}/`);
+              pathname.startsWith(
+                `${item.href}/`
+              );
 
             return (
-              <Link
+              <div
                 key={item.href}
-                href={item.href}
-                className={clsx(
-                  "relative flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300",
-                  active
-                    ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/25 scale-[1.02]"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
-                )}
+                className="group relative"
               >
-                {/* Active Indicator */}
-                {active && (
-                  <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-white" />
-                )}
-
-                <Icon
+                <Link
+                  href={item.href}
                   className={clsx(
-                    "h-5 w-5 shrink-0 transition-transform duration-300",
-                    active ? "scale-110" : "group-hover:scale-110"
+                    `
+                      relative
+                      flex
+                      items-center
+                      rounded-2xl
+                      text-sm
+                      font-medium
+                      transition-all
+                      duration-200
+                    `,
+                    collapsed
+                      ? "h-12 justify-center"
+                      : "gap-3 px-3.5 py-3",
+                    active
+                      ? `
+                        bg-gradient-to-r
+                        from-emerald-500
+                        via-teal-500
+                        to-cyan-500
+                        text-white
+                        shadow-lg
+                        shadow-emerald-500/20
+                      `
+                      : `
+                        text-slate-600
+                        hover:bg-slate-100
+                        hover:text-slate-900
+                        dark:text-slate-400
+                        dark:hover:bg-slate-900
+                        dark:hover:text-white
+                      `
                   )}
-                />
+                >
+                  {active && (
+                    <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-white" />
+                  )}
 
-                <span>{item.title}</span>
-              </Link>
+                  <Icon
+                    className={clsx(
+                      "h-5 w-5 shrink-0",
+                      active && "scale-110"
+                    )}
+                  />
+
+                  {!collapsed && (
+                    <span>{item.title}</span>
+                  )}
+                </Link>
+
+                {/* Tooltip */}
+
+                {collapsed && (
+                  <div
+                    className="
+                      pointer-events-none
+                      absolute
+                      left-full
+                      top-1/2
+                      z-[100]
+                      ml-3
+                      -translate-y-1/2
+                      whitespace-nowrap
+                      rounded-lg
+                      bg-slate-900
+                      px-3
+                      py-1.5
+                      text-xs
+                      font-medium
+                      text-white
+                      opacity-0
+                      shadow-xl
+                      transition
+                      group-hover:opacity-100
+                      dark:bg-white
+                      dark:text-slate-900
+                    "
+                  >
+                    {item.title}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
       </div>
 
-      {/* Bottom Card */}
-      <div className="p-4">
-        <div className="rounded-3xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-5 text-white shadow-xl">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-white/20 p-3">
-              <Heart className="h-6 w-6" />
+      {/* =====================================
+          WELLNESS
+      ====================================== */}
+
+      <div className="p-3">
+        {collapsed ? (
+          <div className="flex h-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 text-white shadow-lg">
+            <Heart className="h-5 w-5" />
+          </div>
+        ) : (
+          <div className="rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-4 text-white shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-white/15 p-2.5">
+                <Heart className="h-5 w-5" />
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold">
+                  Daily Wellness
+                </h3>
+
+                <p className="mt-0.5 text-[10px] text-white/75">
+                  Keep your wellness journey on track.
+                </p>
+              </div>
             </div>
 
-            <div>
-              <h3 className="font-semibold">
-                Daily Wellness
-              </h3>
+            <div className="mt-4">
+              <div className="mb-1.5 flex justify-between text-[10px]">
+                <span>Today's Progress</span>
+                <span>87%</span>
+              </div>
 
-              <p className="text-sm text-white/80">
-                Complete today's assessment to keep your wellness journey on track.
-              </p>
+              <div className="h-1.5 rounded-full bg-white/20">
+                <div className="h-full w-[87%] rounded-full bg-white" />
+              </div>
             </div>
           </div>
-
-          <div className="mt-6">
-            <div className="mb-2 flex items-center justify-between text-sm">
-              <span>Today's Progress</span>
-
-              <span className="font-semibold">
-                87%
-              </span>
-            </div>
-
-            <div className="h-2 overflow-hidden rounded-full bg-white/20">
-              <div className="h-full w-[87%] rounded-full bg-white transition-all duration-500" />
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </aside>
   );

@@ -1,415 +1,415 @@
-"use client";
+// "use client";
 
-import {
-  MessageSquare,
-  Pin,
-  Plus,
-  Search,
-  Settings,
-  User2,
-} from "lucide-react";
+// import {
+//   MessageSquare,
+//   Pin,
+//   Plus,
+//   Search,
+//   Settings,
+//   User2,
+// } from "lucide-react";
 
-/* ==========================================================
-   Mock Data
-========================================================== */
+// /* ==========================================================
+//    Mock Data
+// ========================================================== */
 
-const todayChats = [
-  "Sleep issues",
-  "Feeling anxious",
-];
+// const todayChats = [
+//   "Sleep issues",
+//   "Feeling anxious",
+// ];
 
-const yesterdayChats = [
-  "Daily wellness report",
-];
+// const yesterdayChats = [
+//   "Daily wellness report",
+// ];
 
-const weekChats = [
-  "Exam stress",
-  "Healthy habits",
-  "Motivation",
-];
+// const weekChats = [
+//   "Exam stress",
+//   "Healthy habits",
+//   "Motivation",
+// ];
 
-/* ==========================================================
-   Component
-========================================================== */
+// /* ==========================================================
+//    Component
+// ========================================================== */
 
-export default function ChatSidebar() {
-  return (
-    <div
-      className="
-        flex
-        h-full
-        w-full
-        flex-col
+// export default function ChatSidebar() {
+//   return (
+//     <div
+//       className="
+//         flex
+//         h-full
+//         w-full
+//         flex-col
 
-        bg-white/70
+//         bg-white/70
 
-        backdrop-blur-xl
+//         backdrop-blur-xl
 
-        dark:bg-slate-950/70
-      "
-    >
-      {/* ======================================================
-          Header
-      ====================================================== */}
+//         dark:bg-slate-950/70
+//       "
+//     >
+//       {/* ======================================================
+//           Header
+//       ====================================================== */}
 
-      <div
-        className="
-          border-b
+//       <div
+//         className="
+//           border-b
 
-          border-slate-200/70
+//           border-slate-200/70
 
-          p-5
+//           p-5
 
-          dark:border-slate-800
-        "
-      >
-        <button
-          className="
-            flex
-            w-full
-            items-center
-            justify-center
-            gap-2
+//           dark:border-slate-800
+//         "
+//       >
+//         <button
+//           className="
+//             flex
+//             w-full
+//             items-center
+//             justify-center
+//             gap-2
 
-            rounded-2xl
+//             rounded-2xl
 
-            bg-slate-900
+//             bg-slate-900
 
-            py-3
+//             py-3
 
-            text-sm
-            font-medium
+//             text-sm
+//             font-medium
 
-            text-white
+//             text-white
 
-            transition-all
+//             transition-all
 
-            hover:scale-[1.02]
+//             hover:scale-[1.02]
 
-            hover:bg-slate-800
+//             hover:bg-slate-800
 
-            active:scale-[0.98]
+//             active:scale-[0.98]
 
-            dark:bg-white
-            dark:text-slate-900
-          "
-        >
-          <Plus className="h-4 w-4" />
+//             dark:bg-white
+//             dark:text-slate-900
+//           "
+//         >
+//           <Plus className="h-4 w-4" />
 
-          New Conversation
-        </button>
+//           New Conversation
+//         </button>
 
-        {/* Search */}
+//         {/* Search */}
 
-        <div className="relative mt-5">
-          <Search
-            className="
-              absolute
-              left-4
-              top-1/2
+//         <div className="relative mt-5">
+//           <Search
+//             className="
+//               absolute
+//               left-4
+//               top-1/2
 
-              h-4
-              w-4
+//               h-4
+//               w-4
 
-              -translate-y-1/2
+//               -translate-y-1/2
 
-              text-slate-400
-            "
-          />
+//               text-slate-400
+//             "
+//           />
 
-          <input
-            type="text"
-            placeholder="Search conversations..."
-            className="
-              w-full
+//           <input
+//             type="text"
+//             placeholder="Search conversations..."
+//             className="
+//               w-full
 
-              rounded-2xl
+//               rounded-2xl
 
-              border
+//               border
 
-              border-slate-200
+//               border-slate-200
 
-              bg-slate-100
+//               bg-slate-100
 
-              py-3
-              pl-11
-              pr-4
+//               py-3
+//               pl-11
+//               pr-4
 
-              text-sm
+//               text-sm
 
-              outline-none
+//               outline-none
 
-              transition-all
+//               transition-all
 
-              focus:border-indigo-500
+//               focus:border-indigo-500
 
-              focus:ring-4
+//               focus:ring-4
 
-              focus:ring-indigo-100
+//               focus:ring-indigo-100
 
-              dark:border-slate-700
+//               dark:border-slate-700
 
-              dark:bg-slate-900
+//               dark:bg-slate-900
 
-              dark:focus:ring-indigo-900/30
-            "
-          />
-        </div>
-      </div>
+//               dark:focus:ring-indigo-900/30
+//             "
+//           />
+//         </div>
+//       </div>
 
-      {/* ======================================================
-          Conversations
-      ====================================================== */}
+//       {/* ======================================================
+//           Conversations
+//       ====================================================== */}
 
-      <div
-        className="
-          flex-1
+//       <div
+//         className="
+//           flex-1
 
-          overflow-y-auto
+//           overflow-y-auto
 
-          px-3
+//           px-3
 
-          py-5
-        "
-      >
-        <SidebarGroup
-          title="Today"
-          chats={todayChats}
-        />
+//           py-5
+//         "
+//       >
+//         <SidebarGroup
+//           title="Today"
+//           chats={todayChats}
+//         />
 
-        <SidebarGroup
-          title="Yesterday"
-          chats={yesterdayChats}
-        />
+//         <SidebarGroup
+//           title="Yesterday"
+//           chats={yesterdayChats}
+//         />
 
-        <SidebarGroup
-          title="Previous 7 Days"
-          chats={weekChats}
-        />
+//         <SidebarGroup
+//           title="Previous 7 Days"
+//           chats={weekChats}
+//         />
 
-        {/* Pinned */}
+//         {/* Pinned */}
 
-        <div className="mt-8">
-          <div
-            className="
-              mb-3
+//         <div className="mt-8">
+//           <div
+//             className="
+//               mb-3
 
-              flex
-              items-center
-              gap-2
+//               flex
+//               items-center
+//               gap-2
 
-              px-2
+//               px-2
 
-              text-xs
+//               text-xs
 
-              font-semibold
+//               font-semibold
 
-              uppercase
+//               uppercase
 
-              tracking-wider
+//               tracking-wider
 
-              text-slate-400
-            "
-          >
-            <Pin className="h-3.5 w-3.5" />
+//               text-slate-400
+//             "
+//           >
+//             <Pin className="h-3.5 w-3.5" />
 
-            Pinned
-          </div>
+//             Pinned
+//           </div>
 
-          <ConversationItem
-            title="My Mental Progress"
-          />
-        </div>
-      </div>
+//           <ConversationItem
+//             title="My Mental Progress"
+//           />
+//         </div>
+//       </div>
 
-      {/* ======================================================
-          Footer
-      ====================================================== */}
+//       {/* ======================================================
+//           Footer
+//       ====================================================== */}
 
-      <div
-        className="
-          border-t
+//       <div
+//         className="
+//           border-t
 
-          border-slate-200/70
+//           border-slate-200/70
 
-          p-4
+//           p-4
 
-          dark:border-slate-800
-        "
-      >
-        <button
-          className="
-            flex
-            w-full
-            items-center
-            gap-3
+//           dark:border-slate-800
+//         "
+//       >
+//         <button
+//           className="
+//             flex
+//             w-full
+//             items-center
+//             gap-3
 
-            rounded-2xl
+//             rounded-2xl
 
-            p-3
+//             p-3
 
-            transition-all
+//             transition-all
 
-            hover:bg-slate-100
+//             hover:bg-slate-100
 
-            dark:hover:bg-slate-800
-          "
-        >
-          <div
-            className="
-              flex
-              h-11
-              w-11
-              shrink-0
-              items-center
-              justify-center
+//             dark:hover:bg-slate-800
+//           "
+//         >
+//           <div
+//             className="
+//               flex
+//               h-11
+//               w-11
+//               shrink-0
+//               items-center
+//               justify-center
 
-              rounded-full
+//               rounded-full
 
-              bg-gradient-to-br
+//               bg-gradient-to-br
 
-              from-indigo-500
+//               from-indigo-500
 
-              to-sky-500
+//               to-sky-500
 
-              text-white
-            "
-          >
-            <User2 className="h-5 w-5" />
-          </div>
+//               text-white
+//             "
+//           >
+//             <User2 className="h-5 w-5" />
+//           </div>
 
-          <div className="min-w-0 flex-1 text-left">
-            <h4
-              className="
-                truncate
+//           <div className="min-w-0 flex-1 text-left">
+//             <h4
+//               className="
+//                 truncate
 
-                text-sm
+//                 text-sm
 
-                font-semibold
-              "
-            >
-              AK Shuvo
-            </h4>
+//                 font-semibold
+//               "
+//             >
+//               AK Shuvo
+//             </h4>
 
-            <p
-              className="
-                truncate
+//             <p
+//               className="
+//                 truncate
 
-                text-xs
+//                 text-xs
 
-                text-slate-400
-              "
-            >
-              Student Account
-            </p>
-          </div>
+//                 text-slate-400
+//               "
+//             >
+//               Student Account
+//             </p>
+//           </div>
 
-          <Settings
-            className="
-              h-5
-              w-5
+//           <Settings
+//             className="
+//               h-5
+//               w-5
 
-              text-slate-400
-            "
-          />
-        </button>
-      </div>
-    </div>
-  );
-}
+//               text-slate-400
+//             "
+//           />
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }
 
-/* ==========================================================
-   Sidebar Group
-========================================================== */
+// /* ==========================================================
+//    Sidebar Group
+// ========================================================== */
 
-function SidebarGroup({
-  title,
-  chats,
-}: {
-  title: string;
-  chats: string[];
-}) {
-  return (
-    <section className="mb-8">
-      <h3
-        className="
-          mb-3
+// function SidebarGroup({
+//   title,
+//   chats,
+// }: {
+//   title: string;
+//   chats: string[];
+// }) {
+//   return (
+//     <section className="mb-8">
+//       <h3
+//         className="
+//           mb-3
 
-          px-2
+//           px-2
 
-          text-xs
+//           text-xs
 
-          font-semibold
+//           font-semibold
 
-          uppercase
+//           uppercase
 
-          tracking-widest
+//           tracking-widest
 
-          text-slate-400
-        "
-      >
-        {title}
-      </h3>
+//           text-slate-400
+//         "
+//       >
+//         {title}
+//       </h3>
 
-      <div className="space-y-1">
-        {chats.map((chat) => (
-          <ConversationItem
-            key={chat}
-            title={chat}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
+//       <div className="space-y-1">
+//         {chats.map((chat) => (
+//           <ConversationItem
+//             key={chat}
+//             title={chat}
+//           />
+//         ))}
+//       </div>
+//     </section>
+//   );
+// }
 
-/* ==========================================================
-   Conversation Item
-========================================================== */
+// /* ==========================================================
+//    Conversation Item
+// ========================================================== */
 
-function ConversationItem({
-  title,
-}: {
-  title: string;
-}) {
-  return (
-    <button
-      className="
-        flex
-        w-full
-        items-center
-        gap-3
+// function ConversationItem({
+//   title,
+// }: {
+//   title: string;
+// }) {
+//   return (
+//     <button
+//       className="
+//         flex
+//         w-full
+//         items-center
+//         gap-3
 
-        rounded-xl
+//         rounded-xl
 
-        px-3
-        py-2.5
+//         px-3
+//         py-2.5
 
-        text-left
+//         text-left
 
-        text-sm
+//         text-sm
 
-        transition-all
+//         transition-all
 
-        hover:bg-slate-100
+//         hover:bg-slate-100
 
-        dark:hover:bg-slate-800
-      "
-    >
-      <MessageSquare
-        className="
-          h-4
-          w-4
+//         dark:hover:bg-slate-800
+//       "
+//     >
+//       <MessageSquare
+//         className="
+//           h-4
+//           w-4
 
-          shrink-0
+//           shrink-0
 
-          text-slate-400
-        "
-      />
+//           text-slate-400
+//         "
+//       />
 
-      <span className="truncate">
-        {title}
-      </span>
-    </button>
-  );
-}
+//       <span className="truncate">
+//         {title}
+//       </span>
+//     </button>
+//   );
+// }

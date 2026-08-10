@@ -3,9 +3,10 @@
 import { Bot, BrainCircuit, User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { MessageRole } from "../../types/message";
 
 export interface MessageBubbleProps {
-  role: "user" | "assistant";
+  role: MessageRole;
   content: string;
   time?: string;
 }

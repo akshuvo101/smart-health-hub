@@ -2,34 +2,53 @@
 
 import SidebarContent from "./SidebarContent";
 
-/* ==========================================================
-   Component
-========================================================== */
+interface DesktopSidebarProps {
+  activeConversationId: string | null;
 
-export default function DesktopSidebar() {
+  onSelectConversation: (
+    id: string
+  ) => void;
+
+  onNewConversation: () => Promise<void>;
+}
+
+export default function DesktopSidebar({
+  activeConversationId,
+  onSelectConversation,
+  onNewConversation,
+}: DesktopSidebarProps) {
   return (
     <aside
       className="
         hidden
-        lg:flex
-
         h-full
-        w-[320px]
+        w-[280px]
         shrink-0
         flex-col
 
         border-r
-        border-slate-200/70
+        border-slate-200/60
 
-        bg-white/80
-
+        bg-white/75
         backdrop-blur-2xl
 
-        dark:border-slate-800
-        dark:bg-slate-950/80
+        dark:border-slate-800/70
+        dark:bg-slate-950/75
+
+        lg:flex
       "
     >
-      <SidebarContent />
+      <SidebarContent
+        activeConversationId={
+          activeConversationId
+        }
+        onSelectConversation={
+          onSelectConversation
+        }
+        onNewConversation={
+          onNewConversation
+        }
+      />
     </aside>
   );
 }

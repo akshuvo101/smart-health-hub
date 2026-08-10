@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRef, useState } from "react";
@@ -12,11 +13,8 @@ import InputFooter from "./InputFooter";
 
 interface ChatInputProps {
     onSend: (message: string) => void | Promise<void>;
-
     isLoading?: boolean;
-
     disabled?: boolean;
-
     placeholder?: string;
 }
 
@@ -49,7 +47,7 @@ export default function ChatInput({
 
         if (!textarea) return;
 
-        textarea.style.height = "0px";
+        textarea.style.height = "auto";
 
         textarea.style.height = `${Math.min(
             textarea.scrollHeight,
@@ -81,8 +79,9 @@ export default function ChatInput({
             !value ||
             disabled ||
             isLoading
-        )
+        ) {
             return;
+        }
 
         await onSend(value);
 
@@ -129,18 +128,24 @@ export default function ChatInput({
     return (
         <div
             className="
+        w-full
+
         border-t
         border-slate-200/70
 
-        bg-white/80
+        bg-white/85
 
-        px-4
-        py-4
+        px-3
+       pt-2.5
+pb-2.5
+
+sm:pt-3
+sm:pb-3
 
         backdrop-blur-2xl
 
-        dark:border-slate-800
-        dark:bg-slate-950/80
+        dark:border-slate-800/80
+        dark:bg-slate-950/85
       "
         >
             <div
@@ -150,37 +155,48 @@ export default function ChatInput({
           max-w-4xl
         "
             >
+                {/* =================================================
+            Input Box
+        ================================================= */}
+
                 <div
                     className="
             flex
             items-end
-            gap-3
+            gap-2
 
-            rounded-[28px]
+            rounded-[26px]
 
             border
             border-slate-200
 
             bg-white
 
-            px-4
-            py-3
+            px-3
+            py-2.5
 
-            shadow-lg
-            shadow-slate-200/40
+            shadow-sm
+            shadow-slate-200/60
 
             transition-all
             duration-200
 
-            focus-within:border-indigo-500
-            focus-within:shadow-indigo-100
+            focus-within:border-indigo-400
+            focus-within:shadow-lg
+            focus-within:shadow-indigo-500/10
             focus-within:ring-4
-            focus-within:ring-indigo-100
+            focus-within:ring-indigo-500/10
+
+            sm:gap-3
+            sm:px-4
+            sm:py-3
 
             dark:border-slate-700
             dark:bg-slate-900
             dark:shadow-black/20
-            dark:focus-within:ring-indigo-900/30
+
+            dark:focus-within:border-indigo-500
+            dark:focus-within:ring-indigo-500/10
           "
                 >
                     <MessageInput
@@ -191,12 +207,8 @@ export default function ChatInput({
                             disabled ||
                             isLoading
                         }
-                        onChange={
-                            handleChange
-                        }
-                        onKeyDown={
-                            handleKeyDown
-                        }
+                        onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                     />
 
                     <SendButton
@@ -209,8 +221,13 @@ export default function ChatInput({
                     />
                 </div>
 
+                {/* =================================================
+            Footer
+        ================================================= */}
+
                 <InputFooter />
             </div>
         </div>
     );
 }
+
