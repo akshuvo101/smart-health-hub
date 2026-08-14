@@ -1,6 +1,6 @@
-# 🩺 Smart HealthHub
+# 🧠 PsychoMentalHub
 
-Smart HealthHub is a modern wellness management platform designed to support students' mental, emotional, and physical wellbeing through personalized tracking, professional support, and role-based healthcare management.
+PsychoMentalHub is a modern wellness management platform designed to support students' mental, emotional, and physical wellbeing through personalized tracking, professional support, and role-based healthcare management.
 
 The platform provides dedicated dashboards for Students, Counselors, Doctors, Administrators, and Super Administrators, enabling seamless communication, wellness monitoring, appointment management, and healthcare analytics.
 
