@@ -34,7 +34,7 @@ export class AppointmentRepository {
   }
 
   /**
-   * Get appointment by id
+   * Get appointment by ID
    */
   static async findById(
     id: string
@@ -55,7 +55,7 @@ export class AppointmentRepository {
   }
 
   /**
-   * Get current student's appointments
+   * Get student's appointments
    */
   static async findByStudent(
     studentId: string
@@ -67,6 +67,9 @@ export class AppointmentRepository {
       .select("*")
       .eq("student_id", studentId)
       .order("appointment_date", {
+        ascending: true,
+      })
+      .order("appointment_time", {
         ascending: true,
       });
 
@@ -102,6 +105,9 @@ export class AppointmentRepository {
 
   /**
    * Delete appointment
+   *
+   * Use only when permanent deletion is actually required.
+   * For normal cancellation, use updateStatus("cancelled").
    */
   static async delete(
     id: string
@@ -119,7 +125,7 @@ export class AppointmentRepository {
   }
 
   /**
-   * Get appointments by status
+   * Get student's appointments by status
    */
   static async findByStatus(
     studentId: string,
@@ -134,6 +140,9 @@ export class AppointmentRepository {
       .eq("status", status)
       .order("appointment_date", {
         ascending: true,
+      })
+      .order("appointment_time", {
+        ascending: true,
       });
 
     if (error) {
@@ -144,7 +153,10 @@ export class AppointmentRepository {
   }
 
   /**
-   * Assign counselor
+   * Counselor accepts a pending appointment.
+   *
+   * Only an unassigned pending appointment
+   * can be accepted.
    */
   static async assignCounselor(
     appointmentId: string,
@@ -159,6 +171,8 @@ export class AppointmentRepository {
         status: "approved",
       })
       .eq("id", appointmentId)
+      .eq("status", "pending")
+      .is("counselor_id", null)
       .select()
       .single();
 
@@ -167,6 +181,45 @@ export class AppointmentRepository {
     }
 
     return data as Appointment;
+  }
+
+  /**
+   * Get appointments visible to a counselor.
+   *
+   * Counselor can see:
+   *
+   * 1. Unassigned appointments
+   *    → New student requests
+   *
+   * 2. Appointments assigned to this counselor
+   *    → Approved / completed / cancelled history
+   *
+   * This allows the counselor dashboard to show
+   * the complete appointment lifecycle.
+   */
+  static async findForCounselor(
+    counselorId: string
+  ): Promise<Appointment[]> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from("appointments")
+      .select("*")
+      .or(
+        `counselor_id.is.null,counselor_id.eq.${counselorId}`
+      )
+      .order("appointment_date", {
+        ascending: true,
+      })
+      .order("appointment_time", {
+        ascending: true,
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data ?? []) as Appointment[];
   }
 
   /**

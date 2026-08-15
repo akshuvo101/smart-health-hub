@@ -4,16 +4,22 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { Eye, EyeOff, HeartPulse, Lock, Mail, User } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  HeartPulse,
+  Lock,
+  Mail,
+  User,
+} from "lucide-react";
 
 import { toast } from "sonner";
 
 import { createClient } from "@/lib/supabase/client";
 import { getDashboardRoute } from "@/lib/redirects";
-
-import SocialLogin from "./social-login";
 import { getUserRole } from "@/lib/get-user-role";
 
+import SocialLogin from "./social-login";
 
 interface AuthCardProps {
   type: "login" | "register";
@@ -24,13 +30,11 @@ export default function AuthCard({ type }: AuthCardProps) {
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [loading, setLoading] = useState(false);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const isLogin = type === "login";
@@ -67,7 +71,6 @@ export default function AuthCard({ type }: AuthCardProps) {
         );
 
         router.push("/login");
-
         return;
       }
 
@@ -96,51 +99,96 @@ export default function AuthCard({ type }: AuthCardProps) {
   };
 
   return (
-    <div className="w-full max-w-md">
-      <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-xl shadow-slate-200/40 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/20">
-        {/* Logo */}
+    <div className="w-full max-w-[440px]">
+      <div
+        className="
+          rounded-3xl
+          border border-slate-200/80
+          bg-white/95
+          p-5
+          shadow-[0_20px_60px_-20px_rgba(15,23,42,0.18)]
+          backdrop-blur-xl
+          sm:p-7
+          lg:rounded-[30px]
+          lg:p-8
+          dark:border-slate-800
+          dark:bg-slate-950/95
+          dark:shadow-black/30
+        "
+      >
+        {/* Brand */}
 
-        <Link href="/" className="mb-8 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 shadow-lg shadow-emerald-500/30">
-            <HeartPulse className="h-6 w-6 text-white" />
+        <Link
+          href="/"
+          className="mb-5 flex items-center gap-3 sm:mb-6"
+        >
+          <div
+            className="
+              flex h-10 w-10 shrink-0 items-center justify-center
+              rounded-xl
+              bg-linear-to-br from-emerald-500 via-teal-500 to-cyan-500
+              shadow-lg shadow-emerald-500/20
+              sm:h-11 sm:w-11
+              sm:rounded-2xl
+            "
+          >
+            <HeartPulse className="h-5 w-5 text-white sm:h-5.5 sm:w-5.5" />
           </div>
 
-          <div>
-            <h2 className="font-bold text-slate-900 dark:text-white">
-              Smart HealthHub
+          <div className="min-w-0">
+            <h2 className="truncate text-sm font-bold tracking-tight text-slate-900 sm:text-base dark:text-white">
+              PsychoMentalHub
             </h2>
 
-            <p className="text-xs text-slate-500">AI Wellness Platform</p>
+            <p className="text-[10px] text-slate-500 sm:text-xs dark:text-slate-400">
+              AI Wellness Platform
+            </p>
           </div>
         </Link>
 
         {/* Heading */}
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            {isLogin ? "Welcome Back 👋" : "Create Account"}
+        <div className="mb-5 sm:mb-6">
+          <h1
+            className="
+              text-2xl
+              font-bold
+              tracking-tight
+              text-slate-950
+              sm:text-3xl
+              dark:text-white
+            "
+          >
+            {isLogin ? "Welcome back 👋" : "Create your account"}
           </h1>
 
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-1.5 max-w-sm text-xs leading-5 text-slate-500 sm:text-sm dark:text-slate-400">
             {isLogin
               ? "Sign in to continue your wellness journey."
-              : "Join Smart HealthHub and start improving your wellness today."}
+              : "Start your personalized wellness journey with Smart HealthHub."}
           </p>
         </div>
 
         {/* Form */}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
           {/* Full Name */}
 
           {!isLogin && (
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label className="mb-1.5 block text-xs font-semibold text-slate-700 sm:text-sm dark:text-slate-300">
                 Full Name
               </label>
 
               <div className="relative">
-                <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <User
+                  className="
+                    absolute left-3.5 top-1/2
+                    h-4 w-4
+                    -translate-y-1/2
+                    text-slate-400
+                  "
+                />
 
                 <input
                   type="text"
@@ -148,7 +196,29 @@ export default function AuthCard({ type }: AuthCardProps) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 outline-none transition-all focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-900"
+                  className="
+                    h-11
+                    w-full
+                    rounded-xl
+                    border border-slate-200
+                    bg-slate-50/70
+                    pl-10 pr-4
+                    text-sm
+                    text-slate-900
+                    outline-none
+                    transition-all
+                    placeholder:text-slate-400
+                    focus:border-emerald-400
+                    focus:bg-white
+                    focus:ring-4
+                    focus:ring-emerald-500/10
+                    sm:h-12
+                    sm:rounded-2xl
+                    dark:border-slate-800
+                    dark:bg-slate-900/70
+                    dark:text-white
+                    dark:focus:bg-slate-900
+                  "
                 />
               </div>
             </div>
@@ -157,12 +227,19 @@ export default function AuthCard({ type }: AuthCardProps) {
           {/* Email */}
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            <label className="mb-1.5 block text-xs font-semibold text-slate-700 sm:text-sm dark:text-slate-300">
               Email Address
             </label>
 
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <Mail
+                className="
+                  absolute left-3.5 top-1/2
+                  h-4 w-4
+                  -translate-y-1/2
+                  text-slate-400
+                "
+              />
 
               <input
                 type="email"
@@ -170,7 +247,29 @@ export default function AuthCard({ type }: AuthCardProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 outline-none transition-all focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-900"
+                className="
+                  h-11
+                  w-full
+                  rounded-xl
+                  border border-slate-200
+                  bg-slate-50/70
+                  pl-10 pr-4
+                  text-sm
+                  text-slate-900
+                  outline-none
+                  transition-all
+                  placeholder:text-slate-400
+                  focus:border-emerald-400
+                  focus:bg-white
+                  focus:ring-4
+                  focus:ring-emerald-500/10
+                  sm:h-12
+                  sm:rounded-2xl
+                  dark:border-slate-800
+                  dark:bg-slate-900/70
+                  dark:text-white
+                  dark:focus:bg-slate-900
+                "
               />
             </div>
           </div>
@@ -178,12 +277,37 @@ export default function AuthCard({ type }: AuthCardProps) {
           {/* Password */}
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Password
-            </label>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="block text-xs font-semibold text-slate-700 sm:text-sm dark:text-slate-300">
+                Password
+              </label>
+
+              {isLogin && (
+                <Link
+                  href="/forgot-password"
+                  className="
+                    text-[11px]
+                    font-semibold
+                    text-emerald-600
+                    transition-colors
+                    hover:text-emerald-500
+                    sm:text-xs
+                  "
+                >
+                  Forgot password?
+                </Link>
+              )}
+            </div>
 
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <Lock
+                className="
+                  absolute left-3.5 top-1/2
+                  h-4 w-4
+                  -translate-y-1/2
+                  text-slate-400
+                "
+              />
 
               <input
                 type={showPassword ? "text" : "password"}
@@ -191,18 +315,50 @@ export default function AuthCard({ type }: AuthCardProps) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-12 outline-none transition-all focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-900"
+                className="
+                  h-11
+                  w-full
+                  rounded-xl
+                  border border-slate-200
+                  bg-slate-50/70
+                  pl-10 pr-11
+                  text-sm
+                  text-slate-900
+                  outline-none
+                  transition-all
+                  placeholder:text-slate-400
+                  focus:border-emerald-400
+                  focus:bg-white
+                  focus:ring-4
+                  focus:ring-emerald-500/10
+                  sm:h-12
+                  sm:rounded-2xl
+                  dark:border-slate-800
+                  dark:bg-slate-900/70
+                  dark:text-white
+                  dark:focus:bg-slate-900
+                "
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
+                aria-label={
+                  showPassword ? "Hide password" : "Show password"
+                }
+                className="
+                  absolute right-3.5 top-1/2
+                  -translate-y-1/2
+                  text-slate-400
+                  transition-colors
+                  hover:text-slate-600
+                  dark:hover:text-slate-200
+                "
               >
                 {showPassword ? (
-                  <EyeOff className="h-5 w-5" />
+                  <EyeOff className="h-4 w-4" />
                 ) : (
-                  <Eye className="h-5 w-5" />
+                  <Eye className="h-4 w-4" />
                 )}
               </button>
             </div>
@@ -212,92 +368,154 @@ export default function AuthCard({ type }: AuthCardProps) {
 
           {!isLogin && (
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label className="mb-1.5 block text-xs font-semibold text-slate-700 sm:text-sm dark:text-slate-300">
                 Confirm Password
               </label>
 
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Lock
+                  className="
+                    absolute left-3.5 top-1/2
+                    h-4 w-4
+                    -translate-y-1/2
+                    text-slate-400
+                  "
+                />
 
                 <input
                   type="password"
                   placeholder="••••••••"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) =>
+                    setConfirmPassword(e.target.value)
+                  }
                   required
-                  className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-12 pr-4 outline-none transition-all focus:border-emerald-500 dark:border-slate-800 dark:bg-slate-900"
+                  className="
+                    h-11
+                    w-full
+                    rounded-xl
+                    border border-slate-200
+                    bg-slate-50/70
+                    pl-10 pr-4
+                    text-sm
+                    text-slate-900
+                    outline-none
+                    transition-all
+                    placeholder:text-slate-400
+                    focus:border-emerald-400
+                    focus:bg-white
+                    focus:ring-4
+                    focus:ring-emerald-500/10
+                    sm:h-12
+                    sm:rounded-2xl
+                    dark:border-slate-800
+                    dark:bg-slate-900/70
+                    dark:text-white
+                    dark:focus:bg-slate-900
+                  "
                 />
               </div>
             </div>
           )}
 
-          {/* Login Extras */}
+          {/* Remember Me */}
 
           {isLogin && (
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                <input type="checkbox" className="rounded" />
-                Remember Me
-              </label>
+            <label className="flex cursor-pointer items-center gap-2 pt-0.5 text-xs text-slate-500 sm:text-sm dark:text-slate-400">
+              <input
+                type="checkbox"
+                className="
+                  h-3.5
+                  w-3.5
+                  rounded
+                  border-slate-300
+                  accent-emerald-500
+                  sm:h-4
+                  sm:w-4
+                "
+              />
 
-              <Link
-                href="/forgot-password"
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-500"
-              >
-                Forgot Password?
-              </Link>
-            </div>
+              <span>Remember me</span>
+            </label>
           )}
 
-          {/* Submit */}
+          {/* Submit Button */}
 
           <button
             type="submit"
             disabled={loading}
             className="
+              group
+              relative
+              h-11
               w-full
-              rounded-2xl
-              bg-gradient-to-r
+              overflow-hidden
+              rounded-xl
+              bg-linear-to-r
               from-emerald-500
               via-teal-500
               to-cyan-500
-              py-3.5
-              font-semibold
+              text-sm
+              font-bold
               text-white
               shadow-lg
-              shadow-emerald-500/25
+              shadow-emerald-500/20
               transition-all
               duration-300
-              hover:-translate-y-1
+              hover:-translate-y-0.5
               hover:shadow-xl
-              hover:shadow-emerald-500/30
+              hover:shadow-emerald-500/25
+              active:translate-y-0
               disabled:cursor-not-allowed
-              disabled:opacity-70
+              disabled:opacity-60
+              sm:h-12
+              sm:rounded-2xl
             "
           >
-            {loading
-              ? "Please wait..."
-              : isLogin
-                ? "Sign In"
-                : "Create Account"}
+            <span className="relative z-10">
+              {loading
+                ? "Please wait..."
+                : isLogin
+                  ? "Sign In"
+                  : "Create Account"}
+            </span>
+
+            <div
+              className="
+                absolute inset-0
+                -translate-x-full
+                bg-linear-to-r
+                from-transparent
+                via-white/20
+                to-transparent
+                transition-transform
+                duration-700
+                group-hover:translate-x-full
+              "
+            />
           </button>
         </form>
 
         {/* Social Login */}
 
-        <div className="mt-8">
+        <div className="mt-5 sm:mt-6">
           <SocialLogin />
         </div>
 
         {/* Footer */}
 
-        <div className="mt-8 text-center text-sm text-slate-500">
+        <div className="mt-5 text-center text-xs text-slate-500 sm:mt-6 sm:text-sm dark:text-slate-400">
           {isLogin ? (
             <>
               Don't have an account?{" "}
               <Link
                 href="/register"
-                className="font-semibold text-emerald-600 hover:text-emerald-500"
+                className="
+                  font-semibold
+                  text-emerald-600
+                  transition-colors
+                  hover:text-emerald-500
+                "
               >
                 Create Account
               </Link>
@@ -307,7 +525,12 @@ export default function AuthCard({ type }: AuthCardProps) {
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="font-semibold text-emerald-600 hover:text-emerald-500"
+                className="
+                  font-semibold
+                  text-emerald-600
+                  transition-colors
+                  hover:text-emerald-500
+                "
               >
                 Sign In
               </Link>

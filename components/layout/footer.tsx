@@ -38,7 +38,7 @@ export default function Footer() {
 
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                  PsycoMentalHub
+                  PsychoMentalHub
                 </h3>
 
                 <p className="text-xs text-slate-500">
@@ -167,7 +167,7 @@ export default function Footer() {
                 <Mail className="mt-1 h-5 w-5 text-emerald-500" />
 
                 <span className="text-slate-600 dark:text-slate-400">
-                  support@smarthealthhub.com
+                  support@psychomentalhub.com
                 </span>
               </div>
 

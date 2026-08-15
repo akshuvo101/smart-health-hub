@@ -1,23 +1,3 @@
-// import { redirect } from "next/navigation";
-// import { getUserRoleServer } from "./get-user-role-server";
-
-// export async function requireRole(
-//   allowedRoles: string[]
-// ) {
-//   const role =
-//     await getUserRoleServer();
-
-//   if (!role) {
-//     redirect("/login");
-//   }
-
-//   if (!allowedRoles.includes(role)) {
-//     redirect("/");
-//   }
-
-//   return role;
-// }
-
 
 import { redirect } from "next/navigation";
 import { getUserRoleServer } from "./get-user-role-server";

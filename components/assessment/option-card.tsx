@@ -4,6 +4,7 @@ import { AssessmentOption } from "@/types/assessment";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
+import { assessmentOptionTranslations } from "@/constants/assessment-translations";
 
 interface OptionCardProps {
   option: AssessmentOption;
@@ -16,6 +17,9 @@ export default function OptionCard({
   selected,
   onClick,
 }: OptionCardProps) {
+  const banglaOption =
+    assessmentOptionTranslations[option.label];
+
   return (
     <motion.button
       whileHover={{
@@ -112,21 +116,36 @@ export default function OptionCard({
 
         {/* Label */}
 
-        <h3
-          className={`
-            text-sm
-            font-medium
-            transition-colors
+        <div className="flex items-center gap-2">
+          <h3
+            className={`
+              text-sm
+              font-medium
+              transition-colors
 
-            ${
-              selected
-                ? "text-emerald-700 dark:text-emerald-300"
-                : "text-slate-900 dark:text-white"
-            }
-          `}
-        >
-          {option.label}
-        </h3>
+              ${
+                selected
+                  ? "text-emerald-700 dark:text-emerald-300"
+                  : "text-slate-900 dark:text-white"
+              }
+            `}
+          >
+            {option.label}
+          </h3>
+
+          {banglaOption && (
+            <span
+              className="
+                text-xs
+                font-normal
+                text-slate-500
+                dark:text-slate-400
+              "
+            >
+              ({banglaOption})
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Selected Badge */}

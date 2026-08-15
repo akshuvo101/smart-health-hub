@@ -16,6 +16,9 @@ import {
 export class AppointmentService {
   /**
    * Create Appointment
+   *
+   * Student creates a new appointment.
+   * New appointments are pending until a counselor accepts them.
    */
   static async createAppointment(
     studentId: string,
@@ -27,11 +30,20 @@ export class AppointmentService {
       `${data.appointment_date}T${data.appointment_time}`
     );
 
-    if (appointmentDate.getTime() < Date.now()) {
-      throw new Error("Appointment cannot be scheduled in the past.");
+    if (Number.isNaN(appointmentDate.getTime())) {
+      throw new Error("Invalid appointment date or time.");
     }
 
-    return AppointmentRepository.create(studentId, data);
+    if (appointmentDate.getTime() < Date.now()) {
+      throw new Error(
+        "Appointment cannot be scheduled in the past."
+      );
+    }
+
+    return AppointmentRepository.create(
+      studentId,
+      data
+    );
   }
 
   /**
@@ -40,7 +52,9 @@ export class AppointmentService {
   static async getStudentAppointments(
     studentId: string
   ): Promise<Appointment[]> {
-    return AppointmentRepository.findByStudent(studentId);
+    return AppointmentRepository.findByStudent(
+      studentId
+    );
   }
 
   /**
@@ -53,22 +67,94 @@ export class AppointmentService {
   }
 
   /**
+   * Get Counselor Appointments
+   *
+   * Returns:
+   * - New pending/unassigned requests
+   * - Appointments assigned to this counselor
+   */
+  static async getCounselorAppointments(
+    counselorId: string
+  ): Promise<Appointment[]> {
+    return AppointmentRepository.findForCounselor(
+      counselorId
+    );
+  }
+
+  /**
+   * Counselor Accepts Appointment
+   *
+   * The repository makes sure that:
+   * - appointment is still pending
+   * - appointment has no counselor
+   *
+   * This prevents two counselors from accepting
+   * the same appointment at the same time.
+   */
+  static async acceptAppointment(
+    appointmentId: string,
+    counselorId: string
+  ): Promise<Appointment> {
+    return AppointmentRepository.assignCounselor(
+      appointmentId,
+      counselorId
+    );
+  }
+
+  /**
+   * Cancel Appointment
+   *
+   * Keeps the appointment in the database with
+   * status = cancelled instead of permanently deleting it.
+   */
+  static async cancelAppointment(
+    appointmentId: string
+  ): Promise<Appointment> {
+    const appointment =
+      await AppointmentRepository.findById(
+        appointmentId
+      );
+
+    if (!appointment) {
+      throw new Error("Appointment not found.");
+    }
+
+    if (
+      appointment.status === "completed" ||
+      appointment.status === "cancelled"
+    ) {
+      throw new Error(
+        "This appointment cannot be cancelled."
+      );
+    }
+
+    return AppointmentRepository.updateStatus(
+      appointmentId,
+      "cancelled"
+    );
+  }
+
+  /**
    * Update Appointment
    */
   static async updateAppointment(
     appointmentId: string,
     input: UpdateAppointmentInput
   ): Promise<Appointment> {
-    // const data = updateAppointmentSchema.parse(input);
+    const data =
+      updateAppointmentSchema.parse(input);
 
     return AppointmentRepository.update(
       appointmentId,
-      input
+      data
     );
   }
 
   /**
    * Delete Appointment
+   *
+   * Permanent deletion should normally not be used
+   * for regular cancellation.
    */
   static async deleteAppointment(
     appointmentId: string
@@ -85,6 +171,27 @@ export class AppointmentService {
     appointmentId: string,
     status: AppointmentStatus
   ): Promise<Appointment> {
+    const appointment =
+      await AppointmentRepository.findById(
+        appointmentId
+      );
+
+    if (!appointment) {
+      throw new Error("Appointment not found.");
+    }
+
+    if (appointment.status === "completed") {
+      throw new Error(
+        "A completed appointment cannot be changed."
+      );
+    }
+
+    if (appointment.status === "cancelled") {
+      throw new Error(
+        "A cancelled appointment cannot be changed."
+      );
+    }
+
     return AppointmentRepository.updateStatus(
       appointmentId,
       status
@@ -93,6 +200,10 @@ export class AppointmentService {
 
   /**
    * Assign Counselor
+   *
+   * Kept for compatibility with existing API/service code.
+   * New counselor acceptance should preferably use
+   * acceptAppointment().
    */
   static async assignCounselor(
     appointmentId: string,
@@ -117,27 +228,31 @@ export class AppointmentService {
 
     const now = new Date();
 
-    const upcoming = appointments.filter((a) => {
+    const upcoming = appointments.filter((appointment) => {
       const appointmentDate = new Date(
-        `${a.appointment_date}T${a.appointment_time}`
+        `${appointment.appointment_date}T${appointment.appointment_time}`
       );
 
       return (
-        a.status === "approved" &&
+        appointment.status === "approved" &&
+        !Number.isNaN(appointmentDate.getTime()) &&
         appointmentDate >= now
       );
     }).length;
 
     const pending = appointments.filter(
-      (a) => a.status === "pending"
+      (appointment) =>
+        appointment.status === "pending"
     ).length;
 
     const completed = appointments.filter(
-      (a) => a.status === "completed"
+      (appointment) =>
+        appointment.status === "completed"
     ).length;
 
     const cancelled = appointments.filter(
-      (a) => a.status === "cancelled"
+      (appointment) =>
+        appointment.status === "cancelled"
     ).length;
 
     return {

@@ -9,6 +9,8 @@ import {
 
 import OptionCard from "./option-card";
 import { AssessmentQuestion } from "@/types/assessment";
+import { assessmentQuestionTranslations } from "@/constants/assessment-translations";
+
 
 interface QuestionCardProps {
   question: AssessmentQuestion;
@@ -37,6 +39,10 @@ export default function QuestionCard({
   onNext,
   onSubmit,
 }: QuestionCardProps) {
+  // Get Bangla translation for the current question
+  const banglaQuestion =
+    assessmentQuestionTranslations[question.question];
+
   return (
     <motion.section
       key={question.id}
@@ -76,6 +82,8 @@ export default function QuestionCard({
           dark:border-slate-800
         "
       >
+        {/* Category */}
+
         <span
           className="
             inline-flex
@@ -95,22 +103,48 @@ export default function QuestionCard({
           {question.category}
         </span>
 
-        <h2
-          className="
-            mt-3
-            text-lg
-            font-semibold
-            leading-snug
-            text-slate-900
+        {/* Question */}
 
-            dark:text-white
-          "
-        >
-          {question.question}
-        </h2>
+        <div className="mt-3">
+          <h2
+            className="
+              text-lg
+              font-semibold
+              leading-snug
+              text-slate-900
 
-        <p className="mt-1 text-xs text-slate-500">
+              dark:text-white
+            "
+          >
+            {question.question}
+          </h2>
+
+          {/* Bangla Translation */}
+
+          {banglaQuestion && (
+            <p
+              className="
+                mt-1.5
+                text-sm
+                font-normal
+                leading-relaxed
+                text-slate-500
+
+                dark:text-slate-400
+              "
+            >
+              ({banglaQuestion})
+            </p>
+          )}
+        </div>
+
+        {/* Instruction */}
+
+        <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
           Choose one option.
+          <span className="ml-1 text-slate-400 dark:text-slate-500">
+            (একটি অপশন নির্বাচন করুন।)
+          </span>
         </p>
       </div>
 
@@ -189,6 +223,7 @@ export default function QuestionCard({
         </motion.button>
 
         {!isLastQuestion ? (
+          /* Next */
           <motion.button
             whileHover={{
               y: -1,
@@ -234,6 +269,7 @@ export default function QuestionCard({
             <ArrowRight className="h-3.5 w-3.5" />
           </motion.button>
         ) : (
+          /* Generate */
           <motion.button
             whileHover={{
               y: -1,
