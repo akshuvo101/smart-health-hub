@@ -27,11 +27,11 @@ const WEEK_DAYS = [
 export default function AppointmentCalendar({
   appointments,
 }: AppointmentCalendarProps) {
-  const [currentMonth, setCurrentMonth] =
-    useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(
+    new Date()
+  );
 
   const year = currentMonth.getFullYear();
-
   const month = currentMonth.getMonth();
 
   const firstDay = new Date(
@@ -46,6 +46,8 @@ export default function AppointmentCalendar({
     0
   ).getDate();
 
+  const today = new Date();
+
   const previousMonth = () => {
     setCurrentMonth(
       new Date(year, month - 1, 1)
@@ -58,12 +60,14 @@ export default function AppointmentCalendar({
     );
   };
 
-  const today = new Date();
-
   const appointmentMap = useMemo(() => {
     const map = new Map<string, Appointment>();
 
     appointments.forEach((appointment) => {
+      /*
+       * If multiple appointments exist on the same date,
+       * the latest one will be displayed.
+       */
       map.set(
         appointment.appointment_date,
         appointment
@@ -93,156 +97,238 @@ export default function AppointmentCalendar({
   };
 
   const monthName =
-    currentMonth.toLocaleDateString(
-      "en-US",
-      {
-        month: "long",
-        year: "numeric",
-      }
-    );
+    currentMonth.toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
 
-  const calendarCells = [];
+  const calendarCells: (number | null)[] = [];
 
-  for (
-    let i = 0;
-    i < firstDay;
-    i++
-  ) {
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) {
     calendarCells.push(null);
   }
 
-  for (
-    let day = 1;
-    day <= daysInMonth;
-    day++
-  ) {
+  // Days
+  for (let day = 1; day <= daysInMonth; day++) {
     calendarCells.push(day);
   }
-  return (
-    <div className="rounded-3xl bg-white p-6 shadow-sm dark:bg-slate-900">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <CalendarDays className="h-6 w-6 text-emerald-500" />
 
-          <h2 className="text-xl font-semibold">
-            Appointment Calendar
-          </h2>
+  return (
+    <div className="rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5">
+
+      {/* Header */}
+      <div className="mb-4 flex items-center justify-between gap-3">
+
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-500/10">
+            <CalendarDays className="h-4 w-4 text-emerald-500" />
+          </div>
+
+          <div className="min-w-0">
+            <h2 className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+              Appointment Calendar
+            </h2>
+
+            <p className="hidden text-[11px] text-slate-500 sm:block">
+              Your scheduled sessions
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Month Navigation */}
+        <div className="flex shrink-0 items-center gap-1">
+
           <button
+            type="button"
             onClick={previousMonth}
-            className="rounded-xl border border-slate-200 p-2 transition hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+            aria-label="Previous month"
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-white"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-3.5 w-3.5" />
           </button>
 
-          <h3 className="min-w-[150px] text-center font-semibold">
+          <span className="min-w-[90px] text-center text-xs font-semibold text-slate-700 dark:text-slate-200">
             {monthName}
-          </h3>
+          </span>
 
           <button
+            type="button"
             onClick={nextMonth}
-            className="rounded-xl border border-slate-200 p-2 transition hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+            aria-label="Next month"
+            className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:border-slate-700 dark:hover:bg-slate-800 dark:hover:text-white"
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className="h-3.5 w-3.5" />
           </button>
+
         </div>
       </div>
 
-      <div className="mb-4 grid grid-cols-7 gap-2">
-        {WEEK_DAYS.map((day) => (
-          <div
-            key={day}
-            className="py-2 text-center text-sm font-semibold text-slate-500"
-          >
-            {day}
-          </div>
-        ))}
+      {/* Calendar */}
+      <div className="overflow-hidden">
 
-        {calendarCells.map((day, index) => {
-          if (day === null) {
-            return (
-              <div
-                key={`empty-${index}`}
-                className="h-12"
-              />
-            );
-          }
+        {/* Week Days */}
+        <div className="mb-1 grid grid-cols-7 gap-1">
 
-          const today = isToday(day);
-
-          const appointment =
-            getAppointment(day);
-
-          return (
+          {WEEK_DAYS.map((day) => (
             <div
               key={day}
-              className={`
-relative flex h-12 items-center justify-center rounded-xl border text-sm font-semibold transition-all
-${today
-                  ? "ring-2 ring-blue-500"
-                  : ""
-                }
-
-${appointment?.status === "pending"
-                  ? "bg-amber-400 text-white border-amber-400"
-
-                  : appointment?.status === "approved"
-                    ? "bg-emerald-500 text-white border-emerald-500"
-
-                    : appointment?.status === "completed"
-                      ? "bg-blue-500 text-white border-blue-500"
-
-                      : appointment?.status === "cancelled"
-                        ? "bg-red-500 text-white border-red-500"
-
-                        : "border-slate-200 dark:border-slate-700"
-                }
-`}
+              className="py-1 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 sm:text-[11px]"
             >
               {day}
-
-              {appointment && !today && (
-                <span className="absolute bottom-1 h-2 w-2 rounded-full bg-white" />
-              )}
-
-              {today && (
-                <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-blue-500" />
-              )}
             </div>
-          );
-        })}
+          ))}
+
+        </div>
+
+        {/* Calendar Days */}
+        <div className="grid grid-cols-7 gap-1">
+
+          {calendarCells.map((day, index) => {
+
+            if (day === null) {
+              return (
+                <div
+                  key={`empty-${index}`}
+                  className="h-8 sm:h-9"
+                />
+              );
+            }
+
+            const todayDate = isToday(day);
+            const appointment =
+              getAppointment(day);
+
+            const status =
+              appointment?.status;
+
+            return (
+              <div
+                key={day}
+                title={
+                  appointment
+                    ? `${appointment.title} • ${status}`
+                    : undefined
+                }
+                className={`
+                  relative flex
+                  h-8
+                  items-center
+                  justify-center
+                  rounded-lg
+                  border
+                  text-[11px]
+                  font-medium
+                  transition-all
+                  sm:h-9
+                  sm:text-xs
+
+                  ${
+                    status === "pending"
+                      ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300"
+                      : status === "approved"
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                        : status === "completed"
+                          ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300"
+                          : status === "cancelled"
+                            ? "border-red-200 bg-red-50 text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300"
+                            : "border-slate-100 text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
+                  }
+
+                  ${
+                    todayDate
+                      ? "ring-2 ring-emerald-400 ring-offset-1 dark:ring-offset-slate-900"
+                      : ""
+                  }
+                `}
+              >
+                {day}
+
+                {/* Appointment Indicator */}
+                {appointment && (
+                  <span
+                    className={`
+                      absolute
+                      bottom-0.5
+                      h-1
+                      w-1
+                      rounded-full
+
+                      ${
+                        status === "pending"
+                          ? "bg-amber-500"
+                          : status === "approved"
+                            ? "bg-emerald-500"
+                            : status === "completed"
+                              ? "bg-blue-500"
+                              : "bg-red-500"
+                      }
+                    `}
+                  />
+                )}
+
+                {/* Today Indicator */}
+                {todayDate && (
+                  <span className="absolute right-0.5 top-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                )}
+              </div>
+            );
+          })}
+
+        </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-5 text-sm">
+      {/* Compact Legend */}
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-slate-100 pt-3 dark:border-slate-800">
 
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded bg-amber-400" />
-          <span>Pending</span>
-        </div>
+        <Legend
+          label="Pending"
+          className="bg-amber-400"
+        />
 
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded bg-emerald-500" />
-          <span>Approved</span>
-        </div>
+        <Legend
+          label="Approved"
+          className="bg-emerald-500"
+        />
 
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded bg-blue-500" />
-          <span>Completed</span>
-        </div>
+        <Legend
+          label="Completed"
+          className="bg-blue-500"
+        />
 
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded bg-red-500" />
-          <span>Cancelled</span>
-        </div>
+        <Legend
+          label="Cancelled"
+          className="bg-red-500"
+        />
 
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded-full border-2 border-blue-500 bg-white dark:bg-slate-900" />
+        <div className="flex items-center gap-1.5 text-[10px] text-slate-500 sm:text-[11px]">
+          <span className="h-2.5 w-2.5 rounded-full border-2 border-emerald-400" />
           <span>Today</span>
         </div>
 
       </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------
+   Legend Item
+------------------------------------------------------- */
+
+function Legend({
+  label,
+  className,
+}: {
+  label: string;
+  className: string;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 text-[10px] text-slate-500 sm:text-[11px]">
+      <span
+        className={`h-2.5 w-2.5 rounded-sm ${className}`}
+      />
+
+      <span>{label}</span>
     </div>
   );
 }

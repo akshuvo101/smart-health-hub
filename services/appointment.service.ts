@@ -134,6 +134,39 @@ export class AppointmentService {
     );
   }
 
+  static async cancelStudentAppointment(
+  appointmentId: string,
+  studentId: string
+): Promise<Appointment> {
+  const appointment =
+    await AppointmentRepository.findById(
+      appointmentId
+    );
+
+  if (!appointment) {
+    throw new Error("Appointment not found.");
+  }
+
+  if (appointment.student_id !== studentId) {
+    throw new Error(
+      "You are not allowed to cancel this appointment."
+    );
+  }
+
+  if (
+    appointment.status === "completed" ||
+    appointment.status === "cancelled"
+  ) {
+    throw new Error(
+      "This appointment cannot be cancelled."
+    );
+  }
+
+  return AppointmentRepository.updateStatus(
+    appointmentId,
+    "cancelled"
+  );
+}
   /**
    * Update Appointment
    */

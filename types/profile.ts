@@ -71,3 +71,8 @@ export interface UpdateProfilePayload {
 
   bio: string;
 }
+export interface CounselorStudentApiResponse {
+  success: boolean;
+  data: Profile[] | null;
+  message?: string;
+}

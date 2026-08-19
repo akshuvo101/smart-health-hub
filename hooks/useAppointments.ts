@@ -155,6 +155,35 @@ export function useAppointments() {
         fetchAppointments();
     }, [fetchAppointments]);
 
+    const cancelAppointment = async (id: string) => {
+        const response = await fetch(
+            `/api/appointments/${id}`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    action: "cancel",
+                }),
+            }
+        );
+
+        const result: ApiResponse<Appointment> =
+            await response.json();
+
+        if (!result.success || !result.data) {
+            throw new Error(
+                result.message ??
+                "Failed to cancel appointment."
+            );
+        }
+
+        await fetchAppointments();
+
+        return result.data;
+    };
+
     return {
         appointments,
 
@@ -169,5 +198,7 @@ export function useAppointments() {
         updateAppointment,
 
         deleteAppointment,
+
+        cancelAppointment,
     };
 }

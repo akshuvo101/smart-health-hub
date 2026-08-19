@@ -96,6 +96,13 @@ export async function GET(
 /**
  * PATCH /api/appointments/:id
  */
+/**
+ * PATCH /api/appointments/:id
+ *
+ * Used for:
+ * - Normal appointment update
+ * - Student cancellation
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -137,6 +144,7 @@ export async function PATCH(
       });
     }
 
+    // Student can only modify their own appointment
     if (existing.student_id !== user.id) {
       const response: ApiResponse<null> = {
         success: false,
@@ -151,6 +159,32 @@ export async function PATCH(
 
     const body = await request.json();
 
+    /*
+     * Student cancellation
+     *
+     * Frontend sends:
+     * { "action": "cancel" }
+     */
+    if (body.action === "cancel") {
+      const cancelled =
+        await AppointmentService.cancelStudentAppointment(
+          id,
+          user.id
+        );
+
+      const response: ApiResponse<Appointment> = {
+        success: true,
+        data: cancelled,
+        message:
+          "Appointment cancelled successfully.",
+      };
+
+      return NextResponse.json(response);
+    }
+
+    /*
+     * Normal appointment update
+     */
     const validated =
       updateAppointmentSchema.parse(body);
 
@@ -163,7 +197,8 @@ export async function PATCH(
     const response: ApiResponse<Appointment> = {
       success: true,
       data: updated,
-      message: "Appointment updated successfully.",
+      message:
+        "Appointment updated successfully.",
     };
 
     return NextResponse.json(response);

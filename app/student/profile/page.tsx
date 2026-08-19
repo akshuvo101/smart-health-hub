@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { toast } from "sonner";
 
 import ProfileHeader from "@/components/profile/profile-header";
@@ -11,6 +10,7 @@ import SaveProfileButton from "@/components/profile/save-profile-button";
 
 import { Profile } from "@/types/profile";
 import { ApiResponse } from "@/types/api";
+
 import AcademicInformationCard from "@/components/profile/academic-info-card";
 import PersonalInformationCard from "@/components/profile/personal-info-card";
 
@@ -45,7 +45,7 @@ export default function StudentProfilePage() {
             } else {
                 toast.error(
                     result.message ??
-                    "Profile not found."
+                        "Profile not found."
                 );
             }
         } catch (error) {
@@ -97,7 +97,7 @@ export default function StudentProfilePage() {
             if (!result.success) {
                 throw new Error(
                     result.message ??
-                    "Unable to save profile."
+                        "Unable to save profile."
                 );
             }
 
@@ -117,31 +117,27 @@ export default function StudentProfilePage() {
         } finally {
             setSaving(false);
         }
-    } if (loading) {
+    }
+
+    /* Loading */
+    if (loading) {
         return (
-            <div
-                className="
-          flex
-          h-[60vh]
-          items-center
-          justify-center
-        "
-            >
+            <div className="flex h-[50vh] items-center justify-center">
                 <div className="text-center">
                     <div
                         className="
-              mx-auto
-              h-12
-              w-12
-              animate-spin
-              rounded-full
-              border-4
-              border-emerald-500
-              border-t-transparent
-            "
+                            mx-auto
+                            h-9
+                            w-9
+                            animate-spin
+                            rounded-full
+                            border-4
+                            border-emerald-500
+                            border-t-transparent
+                        "
                     />
 
-                    <p className="mt-4 text-sm text-slate-500">
+                    <p className="mt-3 text-xs text-slate-500">
                         Loading profile...
                     </p>
                 </div>
@@ -149,22 +145,16 @@ export default function StudentProfilePage() {
         );
     }
 
+    /* Profile Not Found */
     if (!profile) {
         return (
-            <div
-                className="
-          flex
-          h-[60vh]
-          items-center
-          justify-center
-        "
-            >
+            <div className="flex h-[50vh] items-center justify-center">
                 <div className="text-center">
-                    <h2 className="text-xl font-bold">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                         Profile not found
                     </h2>
 
-                    <p className="mt-2 text-sm text-slate-500">
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                         Unable to load your profile.
                     </p>
                 </div>
@@ -173,31 +163,27 @@ export default function StudentProfilePage() {
     }
 
     return (
-        <div className="space-y-6">
-
+        <div className="space-y-4">
             {/* Header */}
 
             <ProfileHeader />
 
-            {/* Content */}
+            {/* Profile Content */}
 
             <section
                 className="
-          grid
-          gap-6
-
-          xl:grid-cols-12
-        "
+                    grid
+                    gap-4
+                    xl:grid-cols-12
+                "
             >
-
                 {/* Left Sidebar */}
 
                 <div
                     className="
-            space-y-6
-
-            xl:col-span-4
-          "
+                        space-y-4
+                        xl:col-span-4
+                    "
                 >
                     <AvatarCard
                         profile={profile}
@@ -209,35 +195,34 @@ export default function StudentProfilePage() {
 
                 <div
                     className="
-            space-y-6
-
-            xl:col-span-8
-          "
+                        space-y-4
+                        xl:col-span-8
+                    "
                 >
-                        <PersonalInformationCard
-                            profile={profile}
-                            onChange={handleChange}
+                    <PersonalInformationCard
+                        profile={profile}
+                        onChange={handleChange}
+                    />
+
+                    <AcademicInformationCard
+                        profile={profile}
+                        onChange={handleChange}
+                    />
+
+                    <BioCard
+                        profile={profile}
+                        onChange={handleChange}
+                    />
+
+                    {/* Save */}
+
+                    <div className="flex justify-end pt-1">
+                        <SaveProfileButton
+                            loading={saving}
+                            onSave={handleSave}
                         />
-
-                        <AcademicInformationCard
-                            profile={profile}
-                            onChange={handleChange}
-                        />
-
-                        <BioCard
-                            profile={profile}
-                            onChange={handleChange}
-                        />
-
-                        {/* Save */}
-
-                        <div className="flex justify-end">
-                            <SaveProfileButton
-                                loading={saving}
-                                onSave={handleSave}
-                            />
-                        </div>
                     </div>
+                </div>
             </section>
         </div>
     );
