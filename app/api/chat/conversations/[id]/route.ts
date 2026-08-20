@@ -267,3 +267,116 @@ export async function DELETE(
     );
   }
 }
+
+/**
+ * PATCH
+ * /api/chat/conversations/[id]
+ *
+ * Mark conversation as read.
+ */
+export async function PATCH(
+  _request: Request,
+  context: RouteContext<
+    "/api/chat/conversations/[id]"
+  >
+) {
+  try {
+    const { id } =
+      await context.params;
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Conversation ID is required.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const supabase =
+      await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const chatService =
+      new AIChatService(supabase);
+
+    const conversation =
+      await chatService.getConversation(id);
+
+    if (!conversation) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Conversation not found.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    if (
+      conversation.user_id !==
+      user.id
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Forbidden.",
+        },
+        {
+          status: 403,
+        }
+      );
+    }
+
+    const updatedConversation =
+      await chatService.markConversationAsRead(
+        id
+      );
+
+    return NextResponse.json({
+      success: true,
+      data: updatedConversation,
+    });
+  } catch (error) {
+    console.error(
+      "PATCH /api/chat/conversations/[id] error:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to update conversation.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}

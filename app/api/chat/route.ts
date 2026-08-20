@@ -3,21 +3,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { AssessmentRepository } from "@/repositories/assessment.repository";
 import { AIChatService } from "@/services/ai-chat.service";
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
     const conversationId =
-      body.conversationId ||
+      body.conversationId ??
       body.conversation_id;
 
     const content =
-      body.content ||
-      body.messages ||
-      "";
+      typeof body.content === "string"
+        ? body.content
+        : "";
 
     console.log("========== CHAT REQUEST ==========");
     console.dir(body, { depth: null });
+
+    // --------------------------------------------
+    // 1. Authentication
+    // --------------------------------------------
 
     const user =
       await AssessmentRepository.getCurrentUser();
@@ -36,22 +41,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const assessment =
-      await AssessmentRepository.getLatestAssessment(
-        user.id
-      );
-
-    console.log(
-      "Assessment Found:",
-      !!assessment
-    );
+    // --------------------------------------------
+    // 2. Validate conversation
+    // --------------------------------------------
 
     if (!conversationId) {
       return NextResponse.json(
         {
           success: false,
-          message:
-            "Conversation ID is required.",
+          message: "Conversation ID is required.",
         },
         {
           status: 400,
@@ -59,7 +57,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!content || typeof content !== "string") {
+    // --------------------------------------------
+    // 3. Validate message
+    // --------------------------------------------
+
+    if (!content.trim()) {
       return NextResponse.json(
         {
           success: false,
@@ -71,44 +73,52 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!assessment) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Please complete assessment first.",
-        },
-        {
-          status: 404,
-        }
-      );
-    }
+    // --------------------------------------------
+    // 4. Create chat service
+    // --------------------------------------------
 
     const supabase = await createClient();
-    const chatService = new AIChatService(
-      supabase
-    );
 
-    const reply =
+    const chatService =
+      new AIChatService(supabase);
+
+    // --------------------------------------------
+    // 5. Send message
+    //
+    // AIChatService will:
+    // - verify conversation
+    // - load linked assessment
+    // - save user message
+    // - load conversation history
+    // - call Gemini
+    // - save assistant message
+    // --------------------------------------------
+
+    const result =
       await chatService.sendMessage({
         conversationId,
-        content,
+        content: content.trim(),
       });
 
-    console.log("AI Reply:", reply);
+    console.log(
+      "AI Reply:",
+      result.assistantMessage
+    );
+
+    // --------------------------------------------
+    // 6. Return response
+    // --------------------------------------------
 
     return NextResponse.json({
       success: true,
-      message: reply,
+      data: result,
     });
   } catch (error) {
     console.error(
-      "========== ROUTE ERROR =========="
+      "========== CHAT ROUTE ERROR =========="
     );
 
-    console.dir(error, {
-      depth: null,
-    });
+    console.error(error);
 
     return NextResponse.json(
       {

@@ -19,13 +19,17 @@ export default function SidebarOverlay({
       className="
         fixed
         inset-0
-
         z-[60]
 
-        bg-slate-950/50
-        backdrop-blur-sm
+        bg-slate-950/30
+        backdrop-blur-[2px]
+
+        transition-opacity
+        duration-300
 
         lg:hidden
+
+        dark:bg-black/50
       "
     />
   );

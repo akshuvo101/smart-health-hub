@@ -71,6 +71,146 @@ export class AIChatService {
   }
 
   /**
+ * Create an AI Counselor conversation
+ * automatically after an assessment is completed.
+ *
+ * This conversation starts with an assistant message
+ * based on the user's assessment result.
+ */
+  async createAssessmentConversation(
+    userId: string,
+    assessment: Assessment
+  ) {
+    // --------------------------------------------
+    // 1. Prevent duplicate conversation
+    // --------------------------------------------
+
+    const existingConversation =
+      await this.conversationRepository.getConversationByAssessment(
+        userId,
+        assessment.id
+      );
+
+    if (existingConversation) {
+      return existingConversation;
+    }
+
+    // --------------------------------------------
+    // 2. Build a simple personalized intro
+    // --------------------------------------------
+
+    const introMessage =
+      this.buildAssessmentIntro(assessment);
+
+    // --------------------------------------------
+    // 3. Create conversation
+    // --------------------------------------------
+
+    const conversation =
+      await this.conversationRepository.createConversation(
+        userId,
+        {
+          title: "Wellness Assessment",
+          assessment_id: assessment.id,
+          is_new: true,
+        }
+      );
+
+    // --------------------------------------------
+    // 4. Add first assistant message
+    // --------------------------------------------
+
+    await this.messageRepository.createMessage({
+      conversationId: conversation.id,
+      role: "assistant",
+      content: introMessage,
+    });
+
+    // --------------------------------------------
+    // 5. Return conversation
+    // --------------------------------------------
+
+    return conversation;
+  }
+
+  /**
+ * Mark conversation as read.
+ */
+  async markConversationAsRead(
+    conversationId: string
+  ) {
+    return this.conversationRepository.updateConversation(
+      conversationId,
+      {
+        is_new: false,
+      }
+    );
+  }
+  /**
+ * Build the first AI Counselor message
+ * from the completed assessment.
+ */
+  /**
+ * Build the first AI Counselor message
+ * from the completed assessment.
+ */
+  private buildAssessmentIntro(
+    assessment: Assessment
+  ): string {
+    const categories = [
+      { name: "stress", level: assessment.stress },
+      { name: "anxiety", level: assessment.anxiety },
+      { name: "mood", level: assessment.mood },
+      { name: "sleep", level: assessment.sleep },
+      { name: "burnout", level: assessment.burnout },
+      { name: "study focus", level: assessment.focus },
+      { name: "social connection", level: assessment.social },
+      { name: "depression", level: assessment.depression },
+    ];
+
+    const severity: Record<string, number> = {
+      "Very High": 4,
+      High: 3,
+      Moderate: 2,
+      Low: 1,
+      "Very Low": 0,
+    };
+
+    const areasNeedingAttention = categories
+      .filter(({ level }) => severity[level] >= 2)
+      .sort((a, b) => severity[b.level] - severity[a.level])
+      .slice(0, 2)
+      .map(({ name }) => name);
+
+    const strengths = categories
+      .filter(({ level }) => severity[level] <= 1)
+      .sort((a, b) => severity[a.level] - severity[b.level])
+      .slice(0, 2)
+      .map(({ name }) => name);
+
+    const attentionText =
+      areasNeedingAttention.length > 0
+        ? areasNeedingAttention.join(" and ")
+        : "your overall wellbeing";
+
+    const strengthText =
+      strengths.length > 0
+        ? ` Your ${strengths.join(" and ")} look like positive foundations we can build on.`
+        : " Your results show several areas we can gently strengthen together.";
+
+    const stateText = assessment.mental_state
+      ? ` Your overall picture is ${assessment.mental_state.toLowerCase()}.`
+      : "";
+
+    return `Hi! 👋 I've reviewed your latest wellness assessment.${stateText}
+
+I noticed that ${attentionText} may deserve a little more attention right now.${strengthText}
+
+We can work on these areas gradually with simple, personalized steps. You don't need to explain everything from the beginning — I'll keep your assessment insights in mind while we talk.
+
+What would you like to work on first?`;
+  }
+  /**
    * Delete a conversation.
    */
   async deleteConversation(
@@ -294,16 +434,15 @@ Do:
 - ask a gentle follow-up question when appropriate
 - maintain continuity with previous messages
 
-${
-  assessmentContext
-    ? `
+${assessmentContext
+        ? `
 ASSESSMENT CONTEXT:
 ${assessmentContext}
 `
-    : `
+        : `
 No assessment is linked to this conversation.
 `
-}
+      }
 
 CONVERSATION HISTORY:
 ${history}
@@ -397,7 +536,7 @@ ASSISTANT:
         response.text?.trim() ??
         response.candidates?.[0]?.content?.parts
           ?.map(
-            (part: any) =>
+            (part) =>
               part.text ?? ""
           )
           .join("")
@@ -433,15 +572,15 @@ ASSISTANT:
        */
       if (
         conversation.title ===
-          "New Conversation" &&
+        "New Conversation" &&
         dbMessages.length <= 1
       ) {
         const title =
           trimmedContent.length > 50
             ? `${trimmedContent.slice(
-                0,
-                50
-              )}...`
+              0,
+              50
+            )}...`
             : trimmedContent;
 
         await this.conversationRepository.updateConversation(

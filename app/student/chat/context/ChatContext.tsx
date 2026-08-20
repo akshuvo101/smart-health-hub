@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -13,7 +14,15 @@ import {
   ConversationListItem,
   AIMessage,
 } from "@/types/ai-chat";
+
 import { ChatMessage } from "../types/message";
+
+// ==========================================================
+// Constants
+// ==========================================================
+
+const INITIAL_AI_MESSAGE =
+  "Hi! 👋 I'm WellMind AI. I'm here to support your mental wellbeing, help you reflect on your thoughts and emotions, and guide you toward healthier daily habits. How are you feeling today?";
 
 // ==========================================================
 // Helper
@@ -36,31 +45,56 @@ const mapAIMessageToChatMessage = (
 // ==========================================================
 
 interface ChatContextValue {
+  // --------------------------------------------------------
   // Conversations
+  // --------------------------------------------------------
+
   conversations: ConversationListItem[];
 
+  // --------------------------------------------------------
   // Current conversation messages
+  // --------------------------------------------------------
+
   messages: ChatMessage[];
 
+  // --------------------------------------------------------
   // Active conversation
+  // --------------------------------------------------------
+
   activeConversationId: string | null;
 
+  // --------------------------------------------------------
   // Loading states
+  // --------------------------------------------------------
+
   isLoadingConversations: boolean;
   isLoadingMessages: boolean;
   isSendingMessage: boolean;
+  isInitializingConversation: boolean;
 
+  // --------------------------------------------------------
   // Error
+  // --------------------------------------------------------
+
   error: string | null;
 
+  // --------------------------------------------------------
   // Actions
+  // --------------------------------------------------------
+
   loadConversations: () => Promise<void>;
 
   selectConversation: (
     conversationId: string
   ) => void;
 
-  createConversation: () => Promise<string>;
+  createConversation: (
+    assessmentId?: string
+  ) => Promise<string>;
+
+  initializeConversation: (
+    conversationId: string
+  ) => Promise<void>;
 
   sendMessage: (
     text: string,
@@ -136,12 +170,35 @@ export function ChatProvider({
     setIsSendingMessage,
   ] = useState(false);
 
+  const [
+    isInitializingConversation,
+    setIsInitializingConversation,
+  ] = useState(false);
+
   // ========================================================
   // Error
   // ========================================================
 
   const [error, setError] =
     useState<string | null>(null);
+
+  // ========================================================
+  // Message request tracking
+  // ========================================================
+
+  const messageRequestIdRef = useRef(0);
+
+  // ========================================================
+  // Initialization tracking
+  // ========================================================
+
+  /*
+   * Prevents the same conversation from being
+   * initialized more than once during the current
+   * provider lifecycle.
+   */
+  const initializedConversationIdsRef =
+    useRef<Set<string>>(new Set());
 
   // ========================================================
   // Load Conversations
@@ -177,10 +234,10 @@ export function ChatProvider({
         const data: ConversationListItem[] =
           result.data ?? [];
 
-        /*
-         * Keep conversations sorted by
-         * most recently updated.
-         */
+        // ----------------------------------------------------
+        // Sort by latest update
+        // ----------------------------------------------------
+
         const sortedConversations =
           [...data].sort(
             (a, b) =>
@@ -196,14 +253,10 @@ export function ChatProvider({
           sortedConversations
         );
 
-        /*
-         * Automatically select the latest
-         * conversation if there is no active
-         * conversation.
-         *
-         * If the current conversation still
-         * exists, keep it active.
-         */
+        // ----------------------------------------------------
+        // Preserve current conversation
+        // ----------------------------------------------------
+
         setActiveConversationId(
           (current) => {
             if (current) {
@@ -255,6 +308,9 @@ export function ChatProvider({
 
   const loadMessages = useCallback(
     async (conversationId: string) => {
+      const requestId =
+        ++messageRequestIdRef.current;
+
       try {
         setIsLoadingMessages(true);
         setError(null);
@@ -280,16 +336,37 @@ export function ChatProvider({
           );
         }
 
-        setMessages(
+        // ----------------------------------------------------
+        // Ignore stale response
+        // ----------------------------------------------------
+
+        if (
+          requestId !==
+          messageRequestIdRef.current
+        ) {
+          return;
+        }
+
+        const loadedMessages: ChatMessage[] =
           (result.data ?? []).map(
             mapAIMessageToChatMessage
-          )
+          );
+
+        setMessages(
+          loadedMessages
         );
       } catch (error) {
         console.error(
           "Failed to load messages:",
           error
         );
+
+        if (
+          requestId !==
+          messageRequestIdRef.current
+        ) {
+          return;
+        }
 
         setMessages([]);
 
@@ -299,21 +376,55 @@ export function ChatProvider({
             : "Failed to load messages."
         );
       } finally {
-        setIsLoadingMessages(false);
+        if (
+          requestId ===
+          messageRequestIdRef.current
+        ) {
+          setIsLoadingMessages(false);
+        }
       }
     },
     []
   );
 
   // ========================================================
-  // Load Messages Whenever Active Conversation Changes
+  // Load Messages When Active Conversation Changes
   // ========================================================
 
   useEffect(() => {
     if (!activeConversationId) {
+      ++messageRequestIdRef.current;
+
       setMessages([]);
+      setIsLoadingMessages(false);
+
       return;
     }
+
+    void fetch(
+      `/api/chat/conversations/${activeConversationId}`,
+      {
+        method: "PATCH",
+        cache: "no-store",
+      }
+    ).then((response) => {
+      if (!response.ok) {
+        return;
+      }
+
+      setConversations((prev) =>
+        prev.map((conversation) =>
+          conversation.id === activeConversationId
+            ? { ...conversation, is_new: false }
+            : conversation
+        )
+      );
+    }).catch((error) => {
+      console.error(
+        "Failed to mark conversation as read:",
+        error
+      );
+    });
 
     loadMessages(
       activeConversationId
@@ -337,15 +448,8 @@ export function ChatProvider({
           return;
         }
 
-        /*
-         * We intentionally do NOT call
-         * loadMessages() here.
-         *
-         * The activeConversationId change
-         * triggers the useEffect above.
-         *
-         * This prevents duplicate API requests.
-         */
+        setError(null);
+
         setActiveConversationId(
           conversationId
         );
@@ -358,88 +462,289 @@ export function ChatProvider({
   // ========================================================
 
   const createConversation =
-    useCallback(async () => {
-      try {
-        setError(null);
+    useCallback(
+      async (assessmentId?: string) => {
+        try {
+          setError(null);
 
-        const response = await fetch(
-          "/api/chat/conversations",
-          {
-            method: "POST",
+          const response = await fetch(
+            "/api/chat/conversations",
+            {
+              method: "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
 
-            body: JSON.stringify({
-              title:
-                "New Conversation",
-            }),
-          }
-        );
+              body: JSON.stringify({
+                title:
+                  "New Conversation",
 
-        const result =
-          await response.json();
-
-        if (
-          !response.ok ||
-          !result.success
-        ) {
-          throw new Error(
-            result.message ||
-              "Failed to create conversation."
+                assessment_id:
+                  assessmentId ?? null,
+              }),
+            }
           );
+
+          const result =
+            await response.json();
+
+          if (
+            !response.ok ||
+            !result.success
+          ) {
+            throw new Error(
+              result.message ||
+                "Failed to create conversation."
+            );
+          }
+
+          const newConversation: ConversationListItem =
+            result.data;
+
+          // --------------------------------------------------
+          // Add conversation to sidebar
+          // --------------------------------------------------
+
+          setConversations((prev) => [
+            newConversation,
+
+            ...prev.filter(
+              (conversation) =>
+                conversation.id !==
+                newConversation.id
+            ),
+          ]);
+
+          // --------------------------------------------------
+          // Make it active
+          // --------------------------------------------------
+
+          setActiveConversationId(
+            newConversation.id
+          );
+
+          // --------------------------------------------------
+          // Start empty
+          // --------------------------------------------------
+
+          setMessages([]);
+
+          // --------------------------------------------------
+          // Remove initialization lock if somehow reused
+          // --------------------------------------------------
+
+          initializedConversationIdsRef.current.delete(
+            newConversation.id
+          );
+
+          return newConversation.id;
+        } catch (error) {
+          console.error(
+            "Failed to create conversation:",
+            error
+          );
+
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Failed to create conversation."
+          );
+
+          throw error;
+        }
+      },
+      []
+    );
+
+  // ========================================================
+  // Initialize Conversation
+  // ========================================================
+
+  const initializeConversation =
+    useCallback(
+      async (conversationId: string) => {
+        /*
+         * Prevent duplicate initialization.
+         */
+        if (
+          initializedConversationIdsRef.current.has(
+            conversationId
+          )
+        ) {
+          return;
         }
 
-        const newConversation: ConversationListItem =
-          result.data;
-
         /*
-         * Put the new conversation
-         * at the top of the sidebar.
-         */
-        setConversations((prev) => [
-          newConversation,
-
-          ...prev.filter(
-            (conversation) =>
-              conversation.id !==
-              newConversation.id
-          ),
-        ]);
-
-        /*
-         * Make the new conversation active.
+         * Mark immediately.
          *
-         * The active conversation effect
-         * will load its messages.
+         * This prevents React Strict Mode or
+         * multiple renders from triggering
+         * the same initialization twice.
          */
-        setActiveConversationId(
-          newConversation.id
+        initializedConversationIdsRef.current.add(
+          conversationId
         );
 
-        /*
-         * New conversation starts empty.
-         */
-        setMessages([]);
+        try {
+          setIsInitializingConversation(
+            true
+          );
 
-        return newConversation.id;
-      } catch (error) {
-        console.error(
-          "Failed to create conversation:",
-          error
-        );
+          setError(null);
 
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Failed to create conversation."
-        );
+          /*
+           * IMPORTANT:
+           *
+           * We intentionally use the existing
+           * message API here.
+           *
+           * The backend will process this as the
+           * initial AI conversation request.
+           */
+          const response = await fetch(
+            `/api/chat/conversations/${conversationId}/messages`,
+            {
+              method: "POST",
 
-        throw error;
-      }
-    }, []);
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                content:
+                  INITIAL_AI_MESSAGE,
+                initialize: true,
+              }),
+            }
+          );
+
+          const result =
+            await response.json();
+
+          if (
+            !response.ok ||
+            !result.success
+          ) {
+            throw new Error(
+              result.message ||
+                "Failed to initialize conversation."
+            );
+          }
+
+          /*
+           * The current backend response is expected
+           * to return userMessage + assistantMessage.
+           *
+           * For a dedicated initialization endpoint,
+           * we can change this section later.
+           */
+          const {
+            assistantMessage,
+          } = result.data;
+
+          if (!assistantMessage) {
+            throw new Error(
+              "AI welcome message was not returned."
+            );
+          }
+
+          const mappedAssistantMessage =
+            mapAIMessageToChatMessage(
+              assistantMessage
+            );
+
+          /*
+           * Only update visible messages if this
+           * conversation is currently active.
+           */
+          if (
+            activeConversationId ===
+            conversationId
+          ) {
+            setMessages((prev) => {
+              /*
+               * Prevent duplicate assistant messages.
+               */
+              const alreadyExists =
+                prev.some(
+                  (message) =>
+                    message.id ===
+                    mappedAssistantMessage.id
+                );
+
+              if (alreadyExists) {
+                return prev;
+              }
+
+              return [
+                ...prev,
+                {
+                  ...mappedAssistantMessage,
+                  isTyping: false,
+                  status: "completed",
+                },
+              ];
+            });
+          }
+
+          /*
+           * Update conversation timestamp.
+           */
+          setConversations((prev) => {
+            const updated =
+              prev.map(
+                (conversation) =>
+                  conversation.id ===
+                  conversationId
+                    ? {
+                        ...conversation,
+                        updated_at:
+                          assistantMessage.created_at,
+                      }
+                    : conversation
+              );
+
+            return [...updated].sort(
+              (a, b) =>
+                new Date(
+                  b.updated_at
+                ).getTime() -
+                new Date(
+                  a.updated_at
+                ).getTime()
+            );
+          });
+        } catch (error) {
+          /*
+           * Allow retry if initialization failed.
+           */
+          initializedConversationIdsRef.current.delete(
+            conversationId
+          );
+
+          console.error(
+            "Failed to initialize conversation:",
+            error
+          );
+
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Failed to initialize conversation."
+          );
+
+          throw error;
+        } finally {
+          setIsInitializingConversation(
+            false
+          );
+        }
+      },
+      [activeConversationId]
+    );
 
   // ========================================================
   // Send Message
@@ -453,7 +758,12 @@ export function ChatProvider({
       const content = text.trim();
 
       const targetConversationId =
-        conversationId ?? activeConversationId;
+        conversationId ??
+        activeConversationId;
+
+      // ------------------------------------------------------
+      // Validation
+      // ------------------------------------------------------
 
       if (
         !content ||
@@ -463,15 +773,15 @@ export function ChatProvider({
         return;
       }
 
-      /*
-       * Save the conversation ID locally.
-       *
-       * This prevents problems if the user
-       * changes conversation while the request
-       * is running.
-       */
       const currentConversationId =
         targetConversationId;
+
+      // ------------------------------------------------------
+      // Temporary message ID
+      // ------------------------------------------------------
+
+      const temporaryMessageId =
+        `temp-${crypto.randomUUID()}`;
 
       try {
         setIsSendingMessage(true);
@@ -483,7 +793,7 @@ export function ChatProvider({
 
         const temporaryUserMessage: ChatMessage =
           {
-            id: `temp-${crypto.randomUUID()}`,
+            id: temporaryMessageId,
 
             conversationId:
               currentConversationId,
@@ -496,13 +806,19 @@ export function ChatProvider({
               new Date().toISOString(),
 
             status: "sent",
+
             isTyping: false,
           };
 
-        setMessages((prev) => [
-          ...prev,
-          temporaryUserMessage,
-        ]);
+        if (
+          activeConversationId ===
+          currentConversationId
+        ) {
+          setMessages((prev) => [
+            ...prev,
+            temporaryUserMessage,
+          ]);
+        }
 
         // ==================================================
         // API Request
@@ -556,32 +872,50 @@ export function ChatProvider({
         // Update Messages
         // ==================================================
 
-        setMessages((prev) => [
-          ...prev.filter(
-            (message) =>
-              message.id !==
-              temporaryUserMessage.id
-          ),
+        if (
+          activeConversationId ===
+          currentConversationId
+        ) {
+          setMessages((prev) => [
+            ...prev.filter(
+              (message) =>
+                message.id !==
+                temporaryMessageId
+            ),
 
-          mappedUserMessage,
+            mappedUserMessage,
 
-          {
-            ...mappedAssistantMessage,
-            isTyping: false,
-            status: "completed",
-          },
-        ]);
+            {
+              ...mappedAssistantMessage,
+
+              isTyping: false,
+
+              status: "completed",
+            },
+          ]);
+        }
 
         // ==================================================
-        // Update Conversation
+        // Update Conversation Sidebar
         // ==================================================
 
         setConversations((prev) => {
+          const exists =
+            prev.some(
+              (conversation) =>
+                conversation.id ===
+                currentConversationId
+            );
+
+          if (!exists) {
+            return prev;
+          }
+
           const updated =
             prev.map(
               (conversation) =>
                 conversation.id ===
-                conversationId
+                currentConversationId
                   ? {
                       ...conversation,
 
@@ -607,12 +941,15 @@ export function ChatProvider({
           error
         );
 
+        // ----------------------------------------------------
+        // Remove ONLY this temporary message
+        // ----------------------------------------------------
+
         setMessages((prev) =>
           prev.filter(
             (message) =>
-              !message.id.startsWith(
-                "temp-"
-              )
+              message.id !==
+              temporaryMessageId
           )
         );
 
@@ -666,20 +1003,45 @@ export function ChatProvider({
             );
           }
 
+          // --------------------------------------------------
+          // Remove initialization lock
+          // --------------------------------------------------
+
+          initializedConversationIdsRef.current.delete(
+            conversationId
+          );
+
+          // --------------------------------------------------
+          // Remove from sidebar
+          // --------------------------------------------------
+
           setConversations((prev) => {
-            const remaining = prev.filter(
-              (conversation) =>
-                conversation.id !==
-                conversationId
-            );
+            const remaining =
+              prev.filter(
+                (conversation) =>
+                  conversation.id !==
+                  conversationId
+              );
+
+            // ----------------------------------------------
+            // If deleted conversation was active
+            // ----------------------------------------------
 
             if (
               conversationId ===
               activeConversationId
             ) {
+              const nextConversation =
+                remaining[0]?.id ??
+                null;
+
               setActiveConversationId(
-                remaining[0]?.id ?? null
+                nextConversation
               );
+
+              if (!nextConversation) {
+                setMessages([]);
+              }
             }
 
             return remaining;
@@ -729,6 +1091,8 @@ export function ChatProvider({
 
       isSendingMessage,
 
+      isInitializingConversation,
+
       error,
 
       loadConversations,
@@ -736,6 +1100,8 @@ export function ChatProvider({
       selectConversation,
 
       createConversation,
+
+      initializeConversation,
 
       sendMessage,
 
@@ -750,10 +1116,12 @@ export function ChatProvider({
       isLoadingConversations,
       isLoadingMessages,
       isSendingMessage,
+      isInitializingConversation,
       error,
       loadConversations,
       selectConversation,
       createConversation,
+      initializeConversation,
       sendMessage,
       deleteConversation,
       clearConversation,

@@ -10,12 +10,63 @@ import {
   Heart,
   HeartPulse,
 } from "lucide-react";
-
+import {
+  useEffect,
+  useState,
+} from "react";
 import { menuItems } from "@/config/student-menu";
 import { useStudentSidebar } from "./student-sidebar-context";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [hasNewCounselorMessage, setHasNewCounselorMessage] =
+    useState(false);
+
+  useEffect(() => {
+    const loadNewCounselorStatus =
+      async () => {
+        try {
+          const response =
+            await fetch(
+              "/api/chat/conversations",
+              {
+                cache: "no-store",
+              }
+            );
+
+          if (!response.ok) {
+            return;
+          }
+
+          const result =
+            await response.json();
+
+          const conversations =
+            result.data ?? [];
+
+          const hasNew =
+            conversations.some(
+              (conversation: {
+                is_new?: boolean;
+                assessment_id?: string | null;
+              }) =>
+                conversation.is_new === true &&
+                conversation.assessment_id !== null
+            );
+
+          setHasNewCounselorMessage(
+            hasNew
+          );
+        } catch (error) {
+          console.error(
+            "Failed to load counselor notification:",
+            error
+          );
+        }
+      };
+
+    loadNewCounselorStatus();
+  }, [pathname]);
 
   const {
     collapsed,
@@ -242,15 +293,56 @@ export default function Sidebar() {
                     <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-white" />
                   )}
 
-                  <Icon
-                    className={clsx(
-                      "h-5 w-5 shrink-0",
-                      active && "scale-110"
-                    )}
-                  />
+                  <div className="relative">
+                    <Icon
+                      className={clsx(
+                        "h-5 w-5 shrink-0",
+                        active && "scale-110"
+                      )}
+                    />
+
+                    {item.title === "AI Counselor" &&
+                      hasNewCounselorMessage && (
+                        <span
+                          className="
+          absolute
+          -right-1
+          -top-1
+          h-2.5
+          w-2.5
+          rounded-full
+          bg-red-500
+          ring-2
+          ring-white
+          dark:ring-slate-950
+        "
+                        />
+                      )}
+                  </div>
 
                   {!collapsed && (
-                    <span>{item.title}</span>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span>{item.title}</span>
+
+                      {item.title === "AI Counselor" &&
+                        hasNewCounselorMessage && (
+                          <span
+                            className="
+            rounded-full
+            bg-red-500
+            px-1.5
+            py-0.5
+            text-[9px]
+            font-bold
+            uppercase
+            tracking-wide
+            text-white
+          "
+                          >
+                            New
+                          </span>
+                        )}
+                    </div>
                   )}
                 </Link>
 

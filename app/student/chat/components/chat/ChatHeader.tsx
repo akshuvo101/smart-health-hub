@@ -1,15 +1,15 @@
-
 "use client";
 
 import Link from "next/link";
+
 import {
   ArrowLeft,
   Brain,
   Menu,
   MoreVertical,
   Search,
-  Trash2,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 
 /* ==========================================================
@@ -47,7 +47,7 @@ export default function ChatHeader({
         border-b
         border-slate-200/70
 
-        bg-white/80
+        bg-white/85
 
         px-3
         sm:px-4
@@ -56,7 +56,7 @@ export default function ChatHeader({
         backdrop-blur-2xl
 
         dark:border-slate-800/70
-        dark:bg-slate-950/80
+        dark:bg-slate-950/85
       "
     >
       {/* =====================================================
@@ -64,7 +64,7 @@ export default function ChatHeader({
       ===================================================== */}
 
       <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-        {/* Mobile Sidebar Button */}
+        {/* Mobile Menu */}
 
         <button
           type="button"
@@ -117,19 +117,19 @@ export default function ChatHeader({
             rounded-xl
 
             bg-gradient-to-br
-            from-indigo-500
-            via-violet-500
-            to-sky-500
+            from-emerald-500
+            via-teal-500
+            to-cyan-500
 
             text-white
 
             shadow-lg
-            shadow-indigo-500/20
+            shadow-emerald-500/20
           "
         >
           <Sparkles className="h-5 w-5" />
 
-          {/* Online indicator */}
+          {/* Online Indicator */}
 
           <span
             className="
@@ -152,62 +152,39 @@ export default function ChatHeader({
           />
         </div>
 
-        {/* AI Info */}
+        {/* AI Information */}
 
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <h1
-                className="
-                  truncate
+            <h1
+              className="
+                truncate
 
-                  text-sm
-                  font-semibold
-                  sm:text-base
-                  md:text-lg
+                text-sm
+                font-bold
 
-                  text-slate-900
+                text-slate-900
 
-                  dark:text-white
-                "
-              >
-                WellMind AI
-              </h1>
+                sm:text-base
 
-              <span
-                className="
-                  hidden
-                  rounded-full
+                dark:text-white
+              "
+            >
+              WellMind AI
+            </h1>
 
-                  bg-emerald-100
-                  px-2
-                  py-0.5
-
-                  text-[9px]
-                  font-semibold
-
-                  uppercase
-                  tracking-wider
-
-                  text-emerald-700
-                  md:inline-flex
-
-                  dark:bg-emerald-500/10
-                  dark:text-emerald-300
-                "
-              >
-                Premium
-              </span>
-            </div>
-
-            {/* Beta */}
+            {/* AI Badge */}
 
             <span
               className="
                 hidden
+
+                items-center
+                gap-1
+
                 rounded-full
 
-                bg-indigo-100
+                bg-emerald-50
 
                 px-2
                 py-0.5
@@ -218,20 +195,22 @@ export default function ChatHeader({
                 uppercase
                 tracking-wider
 
-                text-indigo-700
+                text-emerald-700
 
-                md:inline-flex
+                sm:inline-flex
 
-                dark:bg-indigo-500/20
-                dark:text-indigo-300
+                dark:bg-emerald-500/10
+                dark:text-emerald-300
               "
             >
-              Beta
+              <Sparkles className="h-2.5 w-2.5" />
+
+              AI
             </span>
           </div>
 
           <div className="mt-0.5 flex items-center gap-2">
-            {/* Online */}
+            {/* Online Status */}
 
             <span
               className="
@@ -239,7 +218,7 @@ export default function ChatHeader({
                 items-center
                 gap-1.5
 
-                text-[11px]
+                text-[10px]
                 font-medium
 
                 text-emerald-600
@@ -254,9 +233,13 @@ export default function ChatHeader({
                     inline-flex
                     h-full
                     w-full
+
                     animate-ping
+
                     rounded-full
+
                     bg-emerald-400
+
                     opacity-60
                   "
                 />
@@ -265,9 +248,12 @@ export default function ChatHeader({
                   className="
                     relative
                     inline-flex
+
                     h-2
                     w-2
+
                     rounded-full
+
                     bg-emerald-500
                   "
                 />
@@ -276,17 +262,28 @@ export default function ChatHeader({
               Online
             </span>
 
-            <span className="hidden text-slate-300 sm:block dark:text-slate-700">
+            {/* Description */}
+
+            <span
+              className="
+                hidden
+
+                text-slate-300
+
+                sm:block
+
+                dark:text-slate-700
+              "
+            >
               •
             </span>
 
             <span
               className="
                 hidden
-
                 truncate
 
-                text-[11px]
+                text-[10px]
 
                 text-slate-500
 
@@ -302,19 +299,19 @@ export default function ChatHeader({
       </div>
 
       {/* =====================================================
-          CENTER
+          CENTER STATUS
       ===================================================== */}
 
       <div
         className="
           hidden
-          xl:flex
-
           items-center
           gap-2
+
+          xl:flex
         "
       >
-        {/* Memory */}
+        {/* Memory Status */}
 
         <div
           className="
@@ -332,7 +329,7 @@ export default function ChatHeader({
             px-3
             py-1.5
 
-            text-[11px]
+            text-[10px]
             font-medium
 
             text-slate-600
@@ -346,14 +343,15 @@ export default function ChatHeader({
             className="
               h-3.5
               w-3.5
-              text-indigo-500
+
+              text-emerald-500
             "
           />
 
-          Memory Enabled
+          Conversation Memory
         </div>
 
-        {/* Model */}
+        {/* Privacy Status */}
 
         <div
           className="
@@ -367,7 +365,7 @@ export default function ChatHeader({
             px-3
             py-1.5
 
-            text-[11px]
+            text-[10px]
             font-medium
 
             text-slate-600
@@ -377,7 +375,7 @@ export default function ChatHeader({
             dark:text-slate-300
           "
         >
-          Gemini 2.5 Flash
+          Private & Secure
         </div>
       </div>
 
@@ -393,47 +391,47 @@ export default function ChatHeader({
           aria-label="Back to dashboard"
           title="Back to dashboard"
           className="
-    flex
-    h-10
-    w-10
-    items-center
-    justify-center
+            flex
+            h-10
+            w-10
+            shrink-0
+            items-center
+            justify-center
 
-    rounded-xl
+            rounded-xl
 
-    border
-    border-slate-200
+            border
+            border-slate-200
 
-    text-slate-600
+            text-slate-600
 
-    transition-all
-    duration-200
+            transition-all
+            duration-200
 
-    hover:border-indigo-200
-    hover:bg-indigo-50
-    hover:text-indigo-600
+            hover:border-emerald-200
+            hover:bg-emerald-50
+            hover:text-emerald-600
 
-    active:scale-95
+            active:scale-95
 
-    md:w-auto
-    md:gap-2
-    md:px-3
+            md:w-auto
+            md:gap-2
+            md:px-3
 
-    dark:border-slate-700
-    dark:text-slate-300
-    dark:hover:border-indigo-500/30
-    dark:hover:bg-indigo-500/10
-    dark:hover:text-indigo-400
-  "
+            dark:border-slate-700
+            dark:text-slate-300
+
+            dark:hover:border-emerald-500/30
+            dark:hover:bg-emerald-500/10
+            dark:hover:text-emerald-400
+          "
         >
           <ArrowLeft className="h-4 w-4 shrink-0" />
 
-          {/* Desktop only */}
           <span className="hidden md:inline">
             Dashboard
           </span>
         </Link>
-
 
         {/* Search */}
 
@@ -473,7 +471,11 @@ export default function ChatHeader({
         <button
           type="button"
           aria-label="Delete conversation"
-          title="Delete conversation"
+          title={
+            canDeleteConversation
+              ? "Delete conversation"
+              : "No conversation selected"
+          }
           onClick={onDeleteConversation}
           disabled={!canDeleteConversation}
           className="
@@ -497,8 +499,8 @@ export default function ChatHeader({
 
             active:scale-95
 
-            disabled:opacity-50
             disabled:cursor-not-allowed
+            disabled:opacity-40
 
             md:flex
 

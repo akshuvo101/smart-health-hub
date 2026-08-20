@@ -43,6 +43,8 @@ export interface AIConversation {
 
   status: ConversationStatus;
 
+  is_new: boolean;
+
   created_at: string;
 
   updated_at: string;
@@ -80,6 +82,8 @@ export interface CreateConversationInput {
   title?: string;
 
   assessment_id?: string | null;
+
+  is_new?: boolean;
 }
 
 /**
@@ -110,6 +114,8 @@ export interface ConversationListItem {
   title: string;
 
   status: ConversationStatus;
+
+  is_new: boolean;
 
   updated_at: string;
 }

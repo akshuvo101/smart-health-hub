@@ -79,6 +79,7 @@ export function useConversations(): UseConversationsReturn {
             status: conversation.status,
             updated_at:
               conversation.updated_at,
+            is_new: conversation.is_new,  
           }));
 
         setConversations(items);
@@ -118,6 +119,7 @@ export function useConversations(): UseConversationsReturn {
         status: conversation.status,
         updated_at:
           conversation.updated_at,
+        is_new: conversation.is_new,
       };
 
       setConversations((current) => [
